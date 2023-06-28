@@ -23,7 +23,7 @@ class RediSyncEventHandler<T>: NSObject
 		self.handler = handler
 	}
 	
-	func emit(_ args: T) {
+	func emit(_ args: T?) {
 		guard isActive else { return }
 		
 		if once {
@@ -34,20 +34,20 @@ class RediSyncEventHandler<T>: NSObject
 	}
 }
 
-public typealias RediSyncEventHandlerCallback<T> = (T) -> ()
+public typealias RediSyncEventHandlerCallback<T> = (T?) -> ()
 
 @available(macOS 10.15, *)
 open class RediSyncEventEmitter: NSObject
 {
-	private var handlers: [UUID: RediSyncEventHandler<Any>] = [:]
+	private var handlers: [UUID: Any] = [:]
 	private var handlerIdsByEvent: [String: [UUID]] = [:]
 	
-	open func emit(_ event: String, args: Any) {
+	open func emit(_ event: String, args: Any? = nil) {
 		Task {
 			let handlerIds = handlerIdsByEvent[event] ?? []
 			
 			for handlerId in handlerIds {
-				handlers[handlerId]?.emit(args)
+				handler(handlerId)?.emit(args)
 			}
 		}
 	}
@@ -57,7 +57,7 @@ open class RediSyncEventEmitter: NSObject
 		let handlerIds = handlerIdsByEvent[event] ?? []
 		
 		for handlerId in handlerIds {
-			handlers[handlerId]?.isActive = false
+			handler(handlerId)?.isActive = false
 			handlers[handlerId] = nil
 		}
 		
@@ -66,14 +66,14 @@ open class RediSyncEventEmitter: NSObject
 	
 	@objc
 	open func off(_ event: String, id: UUID) {
-		handlers[id]?.isActive = false
+		handler(id)?.isActive = false
 		handlerIdsByEvent[event] =  handlerIdsByEvent[event]?.filter { $0 != id }
 		handlers[id] = nil
 	}
 	
 	@objc
 	open func off(id: UUID) {
-		if let handler = handlers[id] {
+		if let handler = handler(id) {
 			handler.isActive = false
 			handlerIdsByEvent[handler.event] =  handlerIdsByEvent[handler.event]?.filter { $0 != id }
 		}
@@ -87,14 +87,31 @@ open class RediSyncEventEmitter: NSObject
 		let eventHandler = RediSyncEventHandler(event, once: once, handler: handler)
 		
 		handlers[eventHandler.id] = eventHandler
-		handlerIdsByEvent[event]?.append(eventHandler.id)
+		handlerIdsByEvent[event] = handlerIdsByEvent[event] ?? []
+		handlerIdsByEvent[event]!.append(eventHandler.id)
 		
+		return eventHandler.id
+	}
+	
+	@discardableResult
+	open func on<T>(_ event: String, once: Bool = false, handler: @escaping RediSyncEventHandlerCallback<T>) -> UUID {
+		let eventHandler = RediSyncEventHandler(event, once: once, handler: handler)
+		
+		handlers[eventHandler.id] = eventHandler
+		handlerIdsByEvent[event] = handlerIdsByEvent[event] ?? []
+		handlerIdsByEvent[event]!.append(eventHandler.id)
+
 		return eventHandler.id
 	}
 
 	@objc
 	@discardableResult
 	open func once(_ event: String, handler: @escaping RediSyncEventHandlerCallback<Any>) -> UUID {
+		return on(event, once: true, handler: handler)
+	}
+	
+	@discardableResult
+	open func once<T>(_ event: String, handler: @escaping RediSyncEventHandlerCallback<T>) -> UUID {
 		return on(event, once: true, handler: handler)
 	}
 	
@@ -123,5 +140,9 @@ open class RediSyncEventEmitter: NSObject
 				eventHandlerIds.append(eventId)
 			}
 		}
+	}
+	
+	private func handler(_ handlerId: UUID) -> RediSyncEventHandler<Any>? {
+		return handlers[handlerId] as? RediSyncEventHandler<Any>
 	}
 }

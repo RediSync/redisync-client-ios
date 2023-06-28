@@ -20,6 +20,7 @@ open class RediSyncClient: RediSyncEventEmitter
 	private let primaryApi = RediSyncAPI(url: URL(string: "https://api-dev.redisync.io/")!)
 	
 	private var api: RediSyncAPI?
+	private var sockets: RediSyncSocketManager?
 	
 	@objc
 	public init(appKey: String) {
@@ -36,7 +37,7 @@ open class RediSyncClient: RediSyncEventEmitter
 		}
 		
 		if status == .connecting {
-			await waitForOneOf("connect", "error")
+			await waitForOneOf("connected", "error")
 			return status == .connected
 		}
 		
@@ -46,12 +47,21 @@ open class RediSyncClient: RediSyncEventEmitter
 		
 		let initResult = await primaryApi.initApiCall(appKey: appKey)
 		
-		if let apiUrl = initResult?.apiUrl {
+		if let initResult = initResult, let apiUrl = initResult.apiUrl, let socketUrls = initResult.socketUrls, let key = initResult.key {
 			api = RediSyncAPI(url: apiUrl)
+			sockets = RediSyncSocketManager(socketUrls: socketUrls, key: key, rs: initResult.rs)
 			
-			status = .connected
+			sockets?.on("connected") { [weak self] _ in
+				self?.status = .connected
+				self?.emit("connected")
+			}
 			
-			return true
+			sockets?.on("disconnected")  { [weak self] _ in
+				self?.status = .notConnected
+				self?.emit("disconnected")
+			}
+			
+			return await connect()
 		}
 		
 		status = .notConnected
