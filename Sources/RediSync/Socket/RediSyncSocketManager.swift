@@ -54,6 +54,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func decrby(key: String, decrement: Int) async -> Int? {
+		let result = await sendToSockets { await $0.decrby(key: key, decrement: decrement) }
+		return result?.value
+	}
+
 	func del(keys: String...) async -> Int? {
 		let result = await sendToSockets { await $0.del(keys: keys) }
 		return result?.value

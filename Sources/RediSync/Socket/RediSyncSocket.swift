@@ -73,6 +73,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("decr", key))
 	}
 	
+	func decrby(key: String, decrement: Int) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("decrby", key, decrement))
+	}
+	
 	func del(keys: String...) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
 	}

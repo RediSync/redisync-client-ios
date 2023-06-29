@@ -197,4 +197,15 @@ final class RediSyncClientTests: XCTestCase
 		let key2ActualValue = await client.getInt(key: key2)
 		XCTAssertEqual(key2ActualValue, -1)
 	}
+	
+	func testDecrbyDecrementsValueBySpecificAmount() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		await client.set(key: key1, value: 10)
+		
+		let decrby1Result = await client.decrby(key: key1, decrement: 3)
+		XCTAssertEqual(decrby1Result, 7)
+	}
 }
