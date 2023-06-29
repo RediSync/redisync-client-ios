@@ -105,4 +105,28 @@ final class RediSyncClientTests: XCTestCase
 		
 		XCTAssertEqual(result, 2)
 	}
+	
+	func testKeysReturnsAllKeysForAsteriskPattern() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let oldKeys = await client.keys(pattern: "*")
+		if oldKeys.count > 0 {
+			await client.del(oldKeys)
+		}
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let key3 = UUID().uuidString
+		
+		await client.set(key: key1, value: UUID().uuidString)
+		await client.set(key: key2, value: Int.random(in: 0...100000))
+		await client.set(key: key3, value: UUID().uuidString)
+		
+		let result = await client.keys(pattern: "*")
+		
+		XCTAssertEqual(result.count, 3)
+		XCTAssertTrue(result.contains { $0 == key1 })
+		XCTAssertTrue(result.contains { $0 == key2 })
+		XCTAssertTrue(result.contains { $0 == key3 })
+	}
 }

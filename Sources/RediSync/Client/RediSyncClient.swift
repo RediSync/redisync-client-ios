@@ -93,6 +93,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.getInt(key: key)
 	}
 	
+	public func keys(pattern: String) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.keys(pattern: pattern) ?? []
+	}
+	
 	@discardableResult
 	public func set(key: String, value: String) async -> Bool {
 		await connectIfNotConnected()
