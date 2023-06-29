@@ -85,6 +85,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
 	}
 	
+	func exists(keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("exists", params: keys))
+	}
+										 
+	func exists(keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("exists", params: keys))
+	}
+	
 	func get(key: String) async -> RediSyncSocketStringResponse? {
 		return RediSyncSocketStringResponse(await emitRedis("get", key))
 	}

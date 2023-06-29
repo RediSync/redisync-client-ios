@@ -208,4 +208,23 @@ final class RediSyncClientTests: XCTestCase
 		let decrby1Result = await client.decrby(key: key1, decrement: 3)
 		XCTAssertEqual(decrby1Result, 7)
 	}
+	
+	func testExistsReturnsNumberOfKeysThatHaveValue() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+
+		await client.set(key: key1, value: "Hello")
+		await client.set(key: key2, value: "World")
+
+		let exists1Result = await client.exists(key1)
+		XCTAssertEqual(exists1Result, 1)
+		
+		let exists2Result = await client.exists("no-such-key")
+		XCTAssertEqual(exists2Result, 0)
+		
+		let exists3Result = await client.exists(key1, key2, "no-such-key")
+		XCTAssertEqual(exists3Result, 2)
+	}
 }
