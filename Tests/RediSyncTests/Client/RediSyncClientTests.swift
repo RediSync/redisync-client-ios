@@ -147,4 +147,33 @@ final class RediSyncClientTests: XCTestCase
 		let result = await client.get(key: key)
 		XCTAssertEqual(result, expectedString)
 	}
+	
+	func testCopyCopiesValueFromSourceToDestination() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.set(key: key1, value: "sheep")
+		
+		let copy1Result = await client.copy(source: key1, destination: key2)
+		XCTAssertTrue(copy1Result)
+		
+		let get1Result = await client.get(key: key2)
+		XCTAssertEqual(get1Result, "sheep")
+		
+		await client.set(key: key1, value: "baah")
+		
+		let copy2Result = await client.copy(source: key1, destination: key2)
+		XCTAssertFalse(copy2Result)
+		
+		let get2Result = await client.get(key: key2)
+		XCTAssertEqual(get2Result, "sheep")
+		
+		let copy3Result = await client.copy(source: key1, destination: key2, replace: true)
+		XCTAssertTrue(copy3Result)
+		
+		let get3Result = await client.get(key: key2)
+		XCTAssertEqual(get3Result, "baah")
+	}
 }

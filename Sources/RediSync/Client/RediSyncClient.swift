@@ -78,6 +78,12 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func copy(source: String, destination: String, replace: Bool? = nil) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.copy(source: source, destination: destination, replace: replace) == 1
+	}
+	
+	@discardableResult
 	public func del(_ keys: String...) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.del(keys: keys) ?? 0

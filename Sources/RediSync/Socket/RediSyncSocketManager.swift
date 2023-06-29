@@ -44,6 +44,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func copy(source: String, destination: String, replace: Bool? = nil) async -> Int? {
+		let result = await sendToSockets { await $0.copy(source: source, destination: destination, replace: replace) }
+		return result?.value
+	}
+	
 	func del(keys: String...) async -> Int? {
 		let result = await sendToSockets { await $0.del(keys: keys) }
 		return result?.value

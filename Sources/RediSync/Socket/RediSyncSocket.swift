@@ -65,6 +65,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("append", key, value))
 	}
 	
+	func copy(source: String, destination: String, replace: Bool? = nil) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("copy", source, destination, replace == true ? 1 : 0))
+	}
+	
 	func del(keys: String...) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
 	}
