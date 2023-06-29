@@ -61,6 +61,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		dispose()
 	}
 	
+	func append(key: String, value: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("append", key, value))
+	}
+	
 	func del(keys: String...) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
 	}

@@ -129,4 +129,22 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertTrue(result.contains { $0 == key2 })
 		XCTAssertTrue(result.contains { $0 == key3 })
 	}
+	
+	func testAppendAppendsStringValue() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key = UUID().uuidString
+		let string1 = "Hello"
+		let string2 = " World"
+		let expectedString = "\(string1)\(string2)"
+		
+		let append1Result = await client.append(key: key, value: string1)
+		XCTAssertEqual(append1Result, string1.count)
+		
+		let append2Result = await client.append(key: key, value: string2)
+		XCTAssertEqual(append2Result, expectedString.count)
+		
+		let result = await client.get(key: key)
+		XCTAssertEqual(result, expectedString)
+	}
 }

@@ -39,6 +39,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		}
 	}
 	
+	func append(key: String, value: String) async -> Int? {
+		let result = await sendToSockets { await $0.append(key: key, value: value) }
+		return result?.value
+	}
+	
 	func del(keys: String...) async -> Int? {
 		let result = await sendToSockets { await $0.del(keys: keys) }
 		return result?.value
