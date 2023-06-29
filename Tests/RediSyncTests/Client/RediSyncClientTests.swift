@@ -176,4 +176,25 @@ final class RediSyncClientTests: XCTestCase
 		let get3Result = await client.get(key: key2)
 		XCTAssertEqual(get3Result, "baah")
 	}
+	
+	func testDecrDecrementsAValue() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+
+		await client.set(key: key1, value: 10)
+		
+		let decr1Result = await client.decr(key: key1)
+		XCTAssertEqual(decr1Result, 9)
+		
+		let decr2Result = await client.decr(key: key2)
+		XCTAssertEqual(decr2Result, -1)
+		
+		let key1ActualValue = await client.getInt(key: key1)
+		XCTAssertEqual(key1ActualValue, 9)
+
+		let key2ActualValue = await client.getInt(key: key2)
+		XCTAssertEqual(key2ActualValue, -1)
+	}
 }

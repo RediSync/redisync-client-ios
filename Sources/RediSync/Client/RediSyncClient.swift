@@ -84,6 +84,12 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func decr(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.decr(key: key) ?? 0
+	}
+	
+	@discardableResult
 	public func del(_ keys: String...) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.del(keys: keys) ?? 0
