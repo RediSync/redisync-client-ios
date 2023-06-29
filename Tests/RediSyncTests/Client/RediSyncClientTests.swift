@@ -10,14 +10,6 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertEqual(client.status, .connected)
 	}
 	
-	func testGetReturnsNilForBadKey() async throws {
-		let client = try await RediSyncTestClientFactory.create()
-
-		let value = await client.get(key: "bad-key")
-
-		XCTAssertEqual(value, nil)
-	}
-
 	func testSetCorrectlySetsValue() async throws {
 		let client = try await RediSyncTestClientFactory.create()
 
@@ -29,5 +21,88 @@ final class RediSyncClientTests: XCTestCase
 
 		let actualValue = await client.get(key: key)
 		XCTAssertEqual(actualValue, expectedValue)
+	}
+	
+	func testGetReturnsNilForBadKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let value = await client.get(key: "bad-key")
+
+		XCTAssertNil(value)
+	}
+	
+	func testGetAutomaticallyConnectsClient() async throws {
+		let client = try await RediSyncTestClientFactory.create(doConnect: false)
+		
+		let value = await client.get(key: "should-automatically-connect")
+		
+		XCTAssertNil(value)
+		XCTAssertEqual(client.status, .connected)
+	}
+	
+	func testGetIntReturnsNumericValue() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let expectedValue = Int.random(in: 0...100000)
+		
+		await client.set(key: key1, value: expectedValue)
+		await client.set(key: key2, value: String(expectedValue))
+		
+		let actualValue1 = await client.getInt(key: key1)
+		let actualValue2 = await client.getInt(key: key2)
+		
+		XCTAssertEqual(actualValue1, expectedValue)
+		XCTAssertEqual(actualValue2, expectedValue)
+	}
+	
+	func testGetIntReturnsNilForStringValue() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key = UUID().uuidString
+		
+		await client.set(key: key, value: "string-value")
+		
+		let actualValue = await client.getInt(key: key)
+		
+		XCTAssertNil(actualValue)
+	}
+	
+	func testDelReturnsZeroIfKeyDoesntExist() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key = UUID().uuidString
+		
+		let result = await client.del(key)
+		
+		XCTAssertEqual(result, 0)
+	}
+	
+	func testDelDeletesSingleKeyIfItExists() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key = UUID().uuidString
+
+		await client.set(key: key, value: UUID().uuidString)
+		
+		let result = await client.del(key)
+		
+		XCTAssertEqual(result, 1)
+	}
+	
+	func testDelDeletesMultipleKeysIfTheyExist() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let key3 = UUID().uuidString
+		
+		await client.set(key: key1, value: UUID().uuidString)
+		await client.set(key: key2, value: Int.random(in: 0...100000))
+		
+		let result = await client.del(key1, key2, key3)
+		
+		XCTAssertEqual(result, 2)
 	}
 }

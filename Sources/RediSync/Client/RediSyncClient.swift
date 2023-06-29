@@ -71,11 +71,44 @@ open class RediSyncClient: RediSyncEventEmitter
 		return false
 	}
 	
+	@discardableResult
+	public func del(_ keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.del(keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func del(_ keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.del(keys: keys) ?? 0
+	}
+	
 	public func get(key: String) async -> String? {
+		await connectIfNotConnected()
 		return await sockets?.get(key: key)
 	}
 	
+	public func getInt(key: String) async -> Int? {
+		await connectIfNotConnected()
+		return await sockets?.getInt(key: key)
+	}
+	
+	@discardableResult
 	public func set(key: String, value: String) async -> Bool {
+		await connectIfNotConnected()
 		return await sockets?.set(key: key, value: value) ?? false
+	}
+	
+	@discardableResult
+	public func set(key: String, value: Int) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.set(key: key, value: value) ?? false
+	}
+	
+	@discardableResult
+	private func connectIfNotConnected() async -> Bool {
+		guard status != .connected else { return true }
+		
+		return await connect()
 	}
 }

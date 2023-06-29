@@ -61,11 +61,27 @@ final class RediSyncSocket: RediSyncEventEmitter
 		dispose()
 	}
 	
+	func del(keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
+	}
+	
+	func del(keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("del", params: keys))
+	}
+	
 	func get(key: String) async -> RediSyncSocketStringResponse? {
 		return RediSyncSocketStringResponse(await emitRedis("get", key))
 	}
 	
+	func getInt(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("get", key))
+	}
+	
 	func set(key: String, value: String) async -> RediSyncSocketOKResponse? {
+		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
+	}
+	
+	func set(key: String, value: Int) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
 	}
 	
@@ -139,6 +155,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 	}
 	
 	private func emitRedis(_ redisFunction: String, _ params: Any...) async -> [Any] {
+		return await emitToSocket("redis", [redisFunction] + params)
+	}
+	
+	private func emitRedis(_ redisFunction: String, params: [Any]) async -> [Any] {
 		return await emitToSocket("redis", [redisFunction] + params)
 	}
 	

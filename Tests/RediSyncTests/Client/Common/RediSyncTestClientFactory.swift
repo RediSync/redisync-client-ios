@@ -13,14 +13,15 @@ class RediSyncTestClientFactory
 {
 	static let testAppKey = "qh73BqoXEbX725hIHvGvQRdbJptHpIRJkD9zuFE6"
 	
-	@discardableResult
-	static func create() async throws -> RediSyncClient {
+	static func create(doConnect: Bool = true) async throws -> RediSyncClient {
 		let client = RediSyncClient(appKey: testAppKey)
 		
-		let didConnect = await client.connect()
-		
-		if !didConnect {
-			XCTFail("RediSync client did not successfully connect")
+		if doConnect {
+			let didConnect = await client.connect()
+			
+			if !didConnect {
+				XCTFail("RediSync client did not successfully connect")
+			}
 		}
 		
 		return client
