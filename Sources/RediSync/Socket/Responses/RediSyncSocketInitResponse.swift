@@ -9,9 +9,13 @@ import Foundation
 
 class RediSyncSocketInitResponse: RediSyncSocketResponse
 {
-	let key: String?
+	let key: String
 	
-	required init(_ data: [String : Any]) {
-		key = data["key"] as? String
+	override init?(_ data: [Any]?) {
+		guard let dataDict = data?.first as? [String: Any], let key = dataDict["key"] as? String else { return nil }
+		
+		self.key = key
+
+		super.init(data)
 	}
 }

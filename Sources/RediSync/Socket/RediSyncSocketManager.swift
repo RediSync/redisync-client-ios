@@ -39,6 +39,28 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		}
 	}
 	
+	func get(key: String) async -> String? {
+		let result = await sendToSockets { await $0.get(key: key) }
+		return result?.value
+	}
+	
+	func set(key: String, value: String) async -> Bool? {
+		let result = await sendToSockets { await $0.set(key: key, value: value) }
+		return result?.ok
+	}
+	
+	private func sendToSockets<T: RediSyncSocketResponse>(_ handler: @escaping RediSyncSocketMessageHandler<T>) async -> T? {
+		return await withCheckedContinuation { continuation in
+			let continuationBlockDuplicates = RediSyncContinuationBlockingDuplicates(continuation: continuation)
+			
+			for socket in sockets {
+				Task {
+					continuationBlockDuplicates.returnResult(await handler(socket))
+				}
+			}
+		}
+	}
+	
 	private func socketConnected(_ socket: RediSyncSocket) {
 		logger.debug("Socket '\(socket.url, privacy: .public)' connected")
 		
@@ -55,3 +77,6 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		}
 	}
 }
+
+@available(macOS 11.0, *)
+typealias RediSyncSocketMessageHandler<T: RediSyncSocketResponse> = (RediSyncSocket) async -> (T?)

@@ -61,11 +61,21 @@ final class RediSyncSocket: RediSyncEventEmitter
 		dispose()
 	}
 	
+	func get(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("get", key))
+	}
+	
+	func set(key: String, value: String) async -> RediSyncSocketOKResponse? {
+		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
+	}
+	
 	@discardableResult
 	private func connect(state: RediSyncSocketState = .connecting) async -> Bool {
 		guard state == .connecting || state == .reconnecting else { return false }
 		
 		guard self.state != .connected else { return true }
+		
+		logger.debug("Connecting to socketUrl '\(self.url, privacy: .public)' with rs: \(self.rs ?? "nil", privacy: .public)")
 		
 		self.state = state
 		
@@ -122,25 +132,36 @@ final class RediSyncSocket: RediSyncEventEmitter
 		}
 	}
 	
-	func dispose() {
+	private func dispose() {
 		logger.debug("dispose")
 		
 		socketManager?.disconnect()
 	}
 	
-	private func emitToSocket<T: RediSyncSocketResponse>(_ event: String, params: [String: Any]) async -> T? {
+	private func emitRedis(_ redisFunction: String, _ params: Any...) async -> [Any] {
+		return await emitToSocket("redis", [redisFunction] + params)
+	}
+	
+	private func emitToSocket(_ event: String, _ params: Any...) async -> [Any] {
 		logger.debug("emitToSocket(\(event, privacy: .public): \(params, privacy: .public)")
 		
 		return await withCheckedContinuation { continuation in
-			socket?.emitWithAck(event, with: [params]).timingOut(after: 10) { [weak self] data in
+			socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
 				self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
-
-				guard let dataDictionary = data.first as? [String: Any] else {
-					continuation.resume(returning: nil)
-					return
-				}
 				
-				continuation.resume(returning: T(dataDictionary) )
+				continuation.resume(returning: data)
+			}
+		}
+	}
+	
+	private func emitToSocket(_ event: String, _ params: [Any]) async -> [Any] {
+		logger.debug("emitToSocket(\(event, privacy: .public): \(params, privacy: .public)")
+		
+		return await withCheckedContinuation { continuation in
+			socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
+				self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
+				
+				continuation.resume(returning: data)
 			}
 		}
 	}
@@ -148,20 +169,20 @@ final class RediSyncSocket: RediSyncEventEmitter
 	private func initConnection() async {
 		logger.debug("Initializing connection")
 		
-		let result: RediSyncSocketInitResponse? = await emitToSocket(
+		let ack = await emitToSocket(
 			"init",
-			params: [
+			[
 				"key": key
 			]
 		)
 		
-		guard let result = result, let key = result.key else {
+		guard let response = RediSyncSocketInitResponse(ack) else {
 			logger.error("Initialization failed")
 			state = .notConnected
 			return
 		}
 		
-		self.key = key
+		key = response.key
 		
 		logger.debug("Connection initialized")
 		
@@ -193,7 +214,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 	}
 	
 	private func onError(data: [Any]) {
-		
+		logger.error("ERROR - \(data, privacy: .public)")
 	}
 	
 	private func onRedisyncError(data: [Any], ack: SocketAckEmitter) {

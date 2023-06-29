@@ -70,4 +70,12 @@ open class RediSyncClient: RediSyncEventEmitter
 		
 		return false
 	}
+	
+	public func get(key: String) async -> String? {
+		return await sockets?.get(key: key)
+	}
+	
+	public func set(key: String, value: String) async -> Bool {
+		return await sockets?.set(key: key, value: value) ?? false
+	}
 }
