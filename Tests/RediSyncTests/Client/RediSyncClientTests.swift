@@ -466,4 +466,16 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertTrue(hkeys1.contains { $0 == "field1" })
 		XCTAssertTrue(hkeys1.contains { $0 == "field2" })
 	}
+	
+	func testHLenReturnsNumberOfFieldsInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.hset(key: key1, field: "field1", value: "Hello")
+		await client.hset(key: key1, field: "field2", value: "World")
+		
+		let hlen1 = await client.hlen(key: key1)
+		XCTAssertEqual(hlen1, 2)
+	}
 }

@@ -203,6 +203,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.hkeys(key: key) ?? []
 	}
 	
+	public func hlen(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hlen(key: key) ?? 0
+	}
+	
 	@discardableResult
 	public func hset(key: String, fieldValues: (String, Any)...) async -> Int {
 		await connectIfNotConnected()

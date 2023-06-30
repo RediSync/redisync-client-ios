@@ -159,6 +159,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hlen(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.hlen(key: key)}
+		return result?.value
+	}
+	
 	func hset(key: String, fieldValues: (String, Any)...) async -> Int? {
 		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
 		return result?.value
