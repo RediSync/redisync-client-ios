@@ -131,6 +131,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.expireat(key: key, unixTimeSeconds: unixTimeSeconds, expireToken: expireToken) == 1
 	}
 	
+	public func expiretime(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.expiretime(key: key) ?? -3
+	}
+	
 	public func get(key: String) async -> String? {
 		await connectIfNotConnected()
 		return await sockets?.get(key: key)

@@ -109,6 +109,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("expireat", key, unixTimeSeconds))
 	}
 	
+	func expiretime(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("expiretime", key))
+	}
+	
 	func get(key: String) async -> RediSyncSocketStringResponse? {
 		return RediSyncSocketStringResponse(await emitRedis("get", key))
 	}

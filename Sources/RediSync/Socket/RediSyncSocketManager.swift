@@ -89,6 +89,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func expiretime(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.expiretime(key: key) }
+		return result?.value
+	}
+	
 	func get(key: String) async -> String? {
 		let result = await sendToSockets { await $0.get(key: key) }
 		return result?.value

@@ -275,4 +275,27 @@ final class RediSyncClientTests: XCTestCase
 		let doesntExistAfterExpiration = await client.exists(key1)
 		XCTAssertEqual(doesntExistAfterExpiration, 0)
 	}
+	
+	func testExpireTimeReturnsTheAbsoluteUnixTimestampInSeconds() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello")
+		
+		let expireTime1Result = await client.expiretime(key: key1)
+		XCTAssertEqual(expireTime1Result, -1)
+		
+		let expectedExpireTime = 33177117420
+		
+		let expireAtResult = await client.expireat(key: key1, unixTimeSeconds: expectedExpireTime)
+		XCTAssertTrue(expireAtResult)
+		
+		let expireTime2Result = await client.expiretime(key: key1)
+		XCTAssertEqual(expireTime2Result, expectedExpireTime)
+		
+		let expireTime3Result = await client.expiretime(key: key2)
+		XCTAssertEqual(expireTime3Result, -2)
+	}
 }
