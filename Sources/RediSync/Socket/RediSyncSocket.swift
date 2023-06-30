@@ -121,6 +121,31 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketStringResponse(await emitRedis("getdel", key))
 	}
 	
+	func getex(key: String, expiration: RediSyncGetExExpiration?) async -> RediSyncSocketStringResponse? {
+		var getExParams: [Any] = [key]
+		
+		if let expiration = expiration {
+			switch expiration {
+			case let .EX(seconds):
+				getExParams.append("EX")
+				getExParams.append(seconds)
+			case let .PX(milliseconds):
+				getExParams.append("PX")
+				getExParams.append(milliseconds)
+			case let .EXAT(timestampSeconds):
+				getExParams.append("EXAT")
+				getExParams.append(timestampSeconds)
+			case let .PXAT(timestampMilliseconds):
+				getExParams.append("PXAT")
+				getExParams.append(timestampMilliseconds)
+			case .PERSIST:
+				getExParams.append("PERSIST")
+			}
+		}
+		
+		return RediSyncSocketStringResponse(await emitRedis("getex", params: getExParams))
+	}
+	
 	func getInt(key: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("get", key))
 	}
@@ -319,4 +344,12 @@ public enum RediSyncExpireToken: String {
 	case XX = "XX"
 	case GT = "GT"
 	case LT = "LT"
+}
+
+public enum RediSyncGetExExpiration {
+	case EX(seconds: Int)
+	case PX(milliseconds: Int)
+	case EXAT(timestampSeconds: Int)
+	case PXAT(timestampMilliseconds: Int)
+	case PERSIST
 }

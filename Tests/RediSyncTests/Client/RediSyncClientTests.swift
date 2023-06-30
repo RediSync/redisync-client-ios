@@ -313,4 +313,25 @@ final class RediSyncClientTests: XCTestCase
 		let get1Result = await client.get(key: key1)
 		XCTAssertNil(get1Result)
 	}
+	
+	func testGetExGetsTheValueOfAKeyAndOptionallySetsItExpiration() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let expectedValue = "Hello"
+
+		await client.set(key: key1, value: expectedValue)
+
+		let getEx1Result = await client.getex(key: key1)
+		XCTAssertEqual(getEx1Result, expectedValue)
+		
+		let ttl1Result = await client.ttl(key: key1)
+		XCTAssertEqual(ttl1Result, -1)
+		
+		let getEx2Result = await client.getex(key: key1, expiration: .EX(seconds: 60))
+		XCTAssertEqual(getEx2Result, expectedValue)
+
+		let ttl2Result = await client.ttl(key: key1)
+		XCTAssertEqual(ttl2Result, 60)
+	}
 }

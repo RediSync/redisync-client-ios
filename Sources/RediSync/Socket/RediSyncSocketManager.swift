@@ -104,6 +104,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func getex(key: String, expiration: RediSyncGetExExpiration?) async -> String? {
+		let result = await sendToSockets { await $0.getex(key: key, expiration: expiration) }
+		return result?.value
+	}
+	
 	func getInt(key: String) async -> Int? {
 		let result = await sendToSockets { await $0.getInt(key: key) }
 		return result?.value
