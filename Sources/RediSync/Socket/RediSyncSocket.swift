@@ -207,6 +207,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
 	}
+	
+	func hsetnx(key: String, field: String, value: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hsetnx", key, field, value))
+	}
+
+	func hsetnx(key: String, field: String, value: Int) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hsetnx", key, field, value))
+	}
 
 	func keys(pattern: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))

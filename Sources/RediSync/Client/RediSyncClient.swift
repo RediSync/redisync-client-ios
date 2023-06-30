@@ -231,9 +231,21 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
-	public func hset(key: String, field: String, value: Any) async -> Int {
+	public func hset(key: String, field: String, value: Any) async -> Bool {
 		await connectIfNotConnected()
-		return await sockets?.hset(key: key, fieldValues: (field, value)) ?? 0
+		return await sockets?.hset(key: key, fieldValues: (field, value)) == 1
+	}
+	
+	@discardableResult
+	public func hsetnx(key: String, field: String, value: String) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.hsetnx(key: key, field: field, value: value) == 1
+	}
+	
+	@discardableResult
+	public func hsetnx(key: String, field: String, value: Int) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.hsetnx(key: key, field: field, value: value) == 1
 	}
 	
 	public func keys(pattern: String) async -> [String] {

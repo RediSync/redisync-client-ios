@@ -493,4 +493,46 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertEqual(hmget1[1], "World")
 		XCTAssertNil(hmget1[2])
 	}
+	
+	func testHSetSetsTheSpecifiedFieldsInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		let hset1 = await client.hset(key: key1, field: "field1", value: "Hello")
+		XCTAssertTrue(hset1)
+		
+		let hget1 = await client.hget(key: key1, field: "field1")
+		XCTAssertEqual(hget1, "Hello")
+		
+		let hset2 = await client.hset(key: key1, fieldValues: ("field2", "Hi"), ("field3", "World"))
+		XCTAssertEqual(hset2, 2)
+		
+		let hget2 = await client.hget(key: key1, field: "field2")
+		XCTAssertEqual(hget2, "Hi")
+		
+		let hget3 = await client.hget(key: key1, field: "field3")
+		XCTAssertEqual(hget3, "World")
+		
+		let hgetall1 = await client.hgetall(key: key1)
+		XCTAssertEqual(hgetall1.count, 3)
+		XCTAssertEqual(hgetall1["field1"], "Hello")
+		XCTAssertEqual(hgetall1["field2"], "Hi")
+		XCTAssertEqual(hgetall1["field3"], "World")
+	}
+	
+	func testHSetNXOnlySetsFieldToValueIfFieldDoesntExistInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		let hsetnx1 = await client.hsetnx(key: key1, field: "field", value: "Hello")
+		XCTAssertTrue(hsetnx1)
+		
+		let hsetnx2 = await client.hsetnx(key: key1, field: "field", value: "World")
+		XCTAssertFalse(hsetnx2)
+		
+		let hget1 = await client.hget(key: key1, field: "field")
+		XCTAssertEqual(hget1, "Hello")
+	}
 }
