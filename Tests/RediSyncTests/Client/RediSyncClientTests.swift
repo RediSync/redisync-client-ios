@@ -334,4 +334,25 @@ final class RediSyncClientTests: XCTestCase
 		let ttl2Result = await client.ttl(key: key1)
 		XCTAssertEqual(ttl2Result, 60)
 	}
+	
+	func testGetRangeGetsTheSubstringValueStoredAtKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let expectedValue = "This is a string"
+
+		await client.set(key: key1, value: expectedValue)
+		
+		let getRange1Result = await client.getrange(key: key1, start: 0, end: 3)
+		XCTAssertEqual(getRange1Result, "This")
+		
+		let getRange2Result = await client.getrange(key: key1, start: -3, end: -1)
+		XCTAssertEqual(getRange2Result, "ing")
+		
+		let getRange3Result = await client.getrange(key: key1, start: 0, end: -1)
+		XCTAssertEqual(getRange3Result, "This is a string")
+		
+		let getRange4Result = await client.getrange(key: key1, start: 10, end: 100)
+		XCTAssertEqual(getRange4Result, "string")
+	}
 }

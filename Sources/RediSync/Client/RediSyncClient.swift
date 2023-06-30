@@ -156,6 +156,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.getInt(key: key)
 	}
 	
+	public func getrange(key: String, start: Int, end: Int) async -> String {
+		await connectIfNotConnected()
+		return await sockets?.getrange(key: key, start: start, end: end) ?? ""
+	}
+	
 	public func keys(pattern: String) async -> [String] {
 		await connectIfNotConnected()
 		return await sockets?.keys(pattern: pattern) ?? []

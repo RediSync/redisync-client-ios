@@ -150,6 +150,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("get", key))
 	}
 	
+	func getrange(key: String, start: Int, end: Int) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("getrange", key, start, end))
+	}
+	
 	func keys(pattern: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))
 	}

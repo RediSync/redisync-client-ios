@@ -114,6 +114,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func getrange(key: String, start: Int, end: Int) async -> String? {
+		let result = await sendToSockets { await $0.getrange(key: key, start: start, end: end) }
+		return result?.value
+	}
+	
 	func keys(pattern: String) async -> [String]? {
 		let result = await sendToSockets { await $0.keys(pattern: pattern) }
 		return result?.value
