@@ -535,4 +535,21 @@ final class RediSyncClientTests: XCTestCase
 		let hget1 = await client.hget(key: key1, field: "field")
 		XCTAssertEqual(hget1, "Hello")
 	}
+	
+	func testHStrLenReturnsLengthOfStringAtFieldOnHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.hset(key: key1, fieldValues: ("f1", "HelloWorld"), ("f2", 99), ("f3", -256))
+		
+		let hstrlen1 = await client.hstrlen(key: key1, field: "f1")
+		XCTAssertEqual(hstrlen1, 10)
+		
+		let hstrlen2 = await client.hstrlen(key: key1, field: "f2")
+		XCTAssertEqual(hstrlen2, 2)
+		
+		let hstrlen3 = await client.hstrlen(key: key1, field: "f3")
+		XCTAssertEqual(hstrlen3, 4)
+	}
 }

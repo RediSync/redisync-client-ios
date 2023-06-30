@@ -248,6 +248,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.hsetnx(key: key, field: field, value: value) == 1
 	}
 	
+	public func hstrlen(key: String, field: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hstrlen(key: key, field: field) ?? 0
+	}
+	
 	public func keys(pattern: String) async -> [String] {
 		await connectIfNotConnected()
 		return await sockets?.keys(pattern: pattern) ?? []
