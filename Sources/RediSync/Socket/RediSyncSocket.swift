@@ -219,6 +219,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 	func hstrlen(key: String, field: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("hstrlen", key, field))
 	}
+	
+	func hvals(key: String) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("hvals", key))
+	}
 
 	func keys(pattern: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))

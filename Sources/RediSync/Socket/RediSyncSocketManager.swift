@@ -199,6 +199,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hvals(key: String) async -> [String]? {
+		let result = await sendToSockets { await $0.hvals(key: key) }
+		return result?.value
+	}
+	
 	func keys(pattern: String) async -> [String]? {
 		let result = await sendToSockets { await $0.keys(pattern: pattern) }
 		return result?.value
