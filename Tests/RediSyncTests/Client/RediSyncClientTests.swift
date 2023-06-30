@@ -298,4 +298,19 @@ final class RediSyncClientTests: XCTestCase
 		let expireTime3Result = await client.expiretime(key: key2)
 		XCTAssertEqual(expireTime3Result, -2)
 	}
+	
+	func testGetDelGetsTheValueOfAKeyAndDeletesTheKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let expectedValue = "Hello"
+		
+		await client.set(key: key1, value: "Hello")
+		
+		let getDel1Result = await client.getdel(key: key1)
+		XCTAssertEqual(getDel1Result, expectedValue)
+		
+		let get1Result = await client.get(key: key1)
+		XCTAssertNil(get1Result)
+	}
 }

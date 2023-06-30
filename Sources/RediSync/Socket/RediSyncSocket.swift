@@ -117,6 +117,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketStringResponse(await emitRedis("get", key))
 	}
 	
+	func getdel(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("getdel", key))
+	}
+	
 	func getInt(key: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("get", key))
 	}
