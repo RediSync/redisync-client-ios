@@ -478,4 +478,19 @@ final class RediSyncClientTests: XCTestCase
 		let hlen1 = await client.hlen(key: key1)
 		XCTAssertEqual(hlen1, 2)
 	}
+	
+	func testHMGetReturnsValuesAssociatedWithSpecifiedFieldsInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.hset(key: key1, field: "field1", value: "Hello")
+		await client.hset(key: key1, field: "field2", value: "World")
+		
+		let hmget1 = await client.hmget(key: key1, fields: "field1", "field2", "nofield")
+		XCTAssertEqual(hmget1.count, 3)
+		XCTAssertEqual(hmget1[0], "Hello")
+		XCTAssertEqual(hmget1[1], "World")
+		XCTAssertNil(hmget1[2])
+	}
 }

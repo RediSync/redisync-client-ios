@@ -190,6 +190,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("hlen", key))
 	}
 	
+	func hmget(key: String, fields: String...) async -> RediSyncSocketArrayResponse<String?>? {
+		return RediSyncSocketArrayResponse(await emitRedis("hmget", params: [key] + fields))
+	}
+	
+	func hmget(key: String, fields: [String]) async -> RediSyncSocketArrayResponse<String?>? {
+		return RediSyncSocketArrayResponse(await emitRedis("hmget", params: [key] + fields))
+	}
+	
 	func hset(key: String, fieldValues: (String, Any)...) async -> RediSyncSocketIntResponse? {
 		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
