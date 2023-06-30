@@ -355,4 +355,70 @@ final class RediSyncClientTests: XCTestCase
 		let getRange4Result = await client.getrange(key: key1, start: 10, end: 100)
 		XCTAssertEqual(getRange4Result, "string")
 	}
+	
+	func testHDelRemovesTheSpecifiedFieldsStoredAtKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		let hset1 = await client.hset(key: key1, fieldValues: ("field1", "foo"))
+		XCTAssertEqual(hset1, 1)
+		
+		let hdel1 = await client.hdel(key: key1, fields: "field1")
+		XCTAssertEqual(hdel1, 1)
+		
+		let hdel2 = await client.hdel(key: key1, fields: "field1")
+		XCTAssertEqual(hdel2, 0)
+		
+		let hdel3 = await client.hdel(key: key1, fields: "field2")
+		XCTAssertEqual(hdel3, 0)
+	}
+	
+	func testHExistsReturnsIfFieldExistsInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		await client.hset(key: key1, fieldValues: ("field1", "foo"))
+
+		let hexists1 = await client.hexists(key: key1, field: "field1")
+		XCTAssertTrue(hexists1)
+
+		let hexists2 = await client.hexists(key: key1, field: "field2")
+		XCTAssertFalse(hexists2)
+	}
+	
+	func testHGetReturnsValueAsssociatedWithFieldInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		await client.hset(key: key1, fieldValues: ("field1", "foo"))
+		
+		let hget1 = await client.hget(key: key1, field: "field1")
+		XCTAssertEqual(hget1, "foo")
+		
+		let hget2 = await client.hget(key: key1, field: "field2")
+		XCTAssertNil(hget2)
+	}
+	
+	func testHGetAllReturnsAllFieldsAndValuesInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.hset(key: key1, fieldValues: ("field1", "Hello"))
+		await client.hset(key: key1, fieldValues: ("field2", "World"))
+		await client.hset(key: key1, fieldValues: ("field3", 13))
+
+		let hgetall1 = await client.hgetall(key: key1)
+		XCTAssertEqual(hgetall1.count, 3)
+		XCTAssertEqual(hgetall1["field1"], "Hello")
+		XCTAssertEqual(hgetall1["field2"], "World")
+		XCTAssertEqual(hgetall1["field3"], "13")
+		
+		let hgetall2 = await client.hgetall(key: key2)
+		XCTAssertEqual(hgetall2.count, 0)
+	}
 }

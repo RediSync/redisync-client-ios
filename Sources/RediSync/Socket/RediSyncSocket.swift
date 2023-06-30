@@ -154,6 +154,36 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketStringResponse(await emitRedis("getrange", key, start, end))
 	}
 	
+	func hdel(key: String, fields: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hdel", params: [key] + fields))
+	}
+	
+	func hdel(key: String, fields: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hdel", params: [key] + fields))
+	}
+	
+	func hexists(key: String, field: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hexists", key, field))
+	}
+	
+	func hget(key: String, field: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("hget", key, field))
+	}
+	
+	func hgetall(key: String) async -> RediSyncSocketDictResponse? {
+		return RediSyncSocketDictResponse(await emitRedis("hgetall", key))
+	}
+	
+	func hset(key: String, fieldValues: (String, Any)...) async -> RediSyncSocketIntResponse? {
+		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
+	}
+
+	func hset(key: String, fieldValues: [(String, Any)]) async -> RediSyncSocketIntResponse? {
+		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
+	}
+
 	func keys(pattern: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))
 	}

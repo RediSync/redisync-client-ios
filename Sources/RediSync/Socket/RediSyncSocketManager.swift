@@ -119,6 +119,41 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hdel(key: String, fields: String...) async -> Int? {
+		let result = await sendToSockets { await $0.hdel(key: key, fields: fields) }
+		return result?.value
+	}
+	
+	func hdel(key: String, fields: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.hdel(key: key, fields: fields) }
+		return result?.value
+	}
+	
+	func hexists(key: String, field: String) async -> Int? {
+		let result = await sendToSockets { await $0.hexists(key: key, field: field) }
+		return result?.value
+	}
+	
+	func hget(key: String, field: String) async -> String? {
+		let result = await sendToSockets { await $0.hget(key: key, field: field) }
+		return result?.value
+	}
+	
+	func hgetall(key: String) async -> [String: String]? {
+		let result = await sendToSockets { await $0.hgetall(key: key) }
+		return result?.value
+	}
+	
+	func hset(key: String, fieldValues: (String, Any)...) async -> Int? {
+		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
+		return result?.value
+	}
+	
+	func hset(key: String, fieldValues: [(String, Any)]) async -> Int? {
+		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
+		return result?.value
+	}
+	
 	func keys(pattern: String) async -> [String]? {
 		let result = await sendToSockets { await $0.keys(pattern: pattern) }
 		return result?.value

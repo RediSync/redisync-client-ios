@@ -161,6 +161,43 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.getrange(key: key, start: start, end: end) ?? ""
 	}
 	
+	public func hdel(key: String, fields: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hdel(key: key, fields: fields) ?? 0
+	}
+	
+	public func hdel(key: String, fields: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hdel(key: key, fields: fields) ?? 0
+	}
+	
+	public func hexists(key: String, field: String) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.hexists(key: key, field: field) == 1
+	}
+	
+	public func hget(key: String, field: String) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.hget(key: key, field: field)
+	}
+	
+	public func hgetall(key: String) async -> [String: String] {
+		await connectIfNotConnected()
+		return await sockets?.hgetall(key: key) ?? [:]
+	}
+	
+	@discardableResult
+	public func hset(key: String, fieldValues: (String, Any)...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
+	}
+	
+	@discardableResult
+	public func hset(key: String, fieldValues: [(String, Any)]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
+	}
+	
 	public func keys(pattern: String) async -> [String] {
 		await connectIfNotConnected()
 		return await sockets?.keys(pattern: pattern) ?? []
