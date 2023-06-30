@@ -174,6 +174,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketDictResponse(await emitRedis("hgetall", key))
 	}
 	
+	func hincrby(key: String, field: String, increment: Int) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hincrby", key, field, increment))
+	}
+	
+	func hincrbyfloat(key: String, field: String, increment: Float) async -> RediSyncSocketFloatResponse? {
+		return RediSyncSocketFloatResponse(await emitRedis("hincrbyfloat", key, field, String(increment)))
+	}
+	
 	func hset(key: String, fieldValues: (String, Any)...) async -> RediSyncSocketIntResponse? {
 		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))

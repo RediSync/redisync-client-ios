@@ -144,6 +144,16 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hincrby(key: String, field: String, increment: Int) async -> Int? {
+		let result = await sendToSockets { await $0.hincrby(key: key, field: field, increment: increment) }
+		return result?.value
+	}
+	
+	func hincrbyfloat(key: String, field: String, increment: Float) async -> Float? {
+		let result = await sendToSockets { await $0.hincrbyfloat(key: key, field: field, increment: increment) }
+		return result?.value
+	}
+	
 	func hset(key: String, fieldValues: (String, Any)...) async -> Int? {
 		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
 		return result?.value

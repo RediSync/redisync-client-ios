@@ -187,6 +187,18 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func hincrby(key: String, field: String, increment: Int) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hincrby(key: key, field: field, increment: increment) ?? 0
+	}
+	
+	@discardableResult
+	public func hincrbyfloat(key: String, field: String, increment: Float) async -> Float {
+		await connectIfNotConnected()
+		return await sockets?.hincrbyfloat(key: key, field: field, increment: increment) ?? 0.0
+	}
+	
+	@discardableResult
 	public func hset(key: String, fieldValues: (String, Any)...) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
