@@ -258,6 +258,24 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.hvals(key: key) ?? []
 	}
 	
+	@discardableResult
+	public func incr(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.incr(key: key) ?? 0
+	}
+	
+	@discardableResult
+	public func incrby(key: String, increment: Int) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.incrby(key: key, increment: increment) ?? 0
+	}
+	
+	@discardableResult
+	public func incrbyfloat(key: String, increment: Float) async -> Float {
+		await connectIfNotConnected()
+		return await sockets?.incrbyfloat(key: key, increment: increment) ?? 0.0
+	}
+	
 	public func keys(pattern: String) async -> [String] {
 		await connectIfNotConnected()
 		return await sockets?.keys(pattern: pattern) ?? []
@@ -271,6 +289,12 @@ open class RediSyncClient: RediSyncEventEmitter
 	
 	@discardableResult
 	public func set(key: String, value: Int) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.set(key: key, value: value) ?? false
+	}
+	
+	@discardableResult
+	public func set(key: String, value: Float) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.set(key: key, value: value) ?? false
 	}

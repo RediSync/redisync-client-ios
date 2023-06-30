@@ -566,4 +566,43 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertTrue(hvals1.contains { $0 == "Hello" })
 		XCTAssertTrue(hvals1.contains { $0 == "World" })
 	}
+	
+	func testIncrIncrementsTheValueAtKeyByOne() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.set(key: key1, value: 10)
+		
+		let incr1 = await client.incr(key: key1)
+		XCTAssertEqual(incr1, 11)
+		
+		let get1 = await client.get(key: key1)
+		XCTAssertEqual(get1, "11")
+	}
+	
+	func testIncrbyIncrementsTheValueAtKeyBySpecifiedAmount() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.set(key: key1, value: 10)
+		
+		let incrby1 = await client.incrby(key: key1, increment: 5)
+		XCTAssertEqual(incrby1, 15)
+	}
+	
+	func testIncrbyfloatIncrementsTheFloatValueAtKeyBySpecifiedAmount() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		await client.set(key: key1, value: 10.5)
+		
+		let incrbyfloat1 = await client.incrbyfloat(key: key1, increment: 0.1)
+		XCTAssertEqual(incrbyfloat1, 10.6)
+		
+		let incrbyfloat2 = await client.incrbyfloat(key: key1, increment: -5)
+		XCTAssertEqual(incrbyfloat2, 5.6)
+	}
 }

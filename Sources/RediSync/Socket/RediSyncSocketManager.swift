@@ -204,6 +204,21 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func incr(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.incr(key: key) }
+		return result?.value
+	}
+	
+	func incrby(key: String, increment: Int) async -> Int? {
+		let result = await sendToSockets { await $0.incrby(key: key, increment: increment) }
+		return result?.value
+	}
+	
+	func incrbyfloat(key: String, increment: Float) async -> Float? {
+		let result = await sendToSockets { await $0.incrbyfloat(key: key, increment: increment) }
+		return result?.value
+	}
+	
 	func keys(pattern: String) async -> [String]? {
 		let result = await sendToSockets { await $0.keys(pattern: pattern) }
 		return result?.value
@@ -215,6 +230,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 	}
 	
 	func set(key: String, value: Int) async -> Bool? {
+		let result = await sendToSockets { await $0.set(key: key, value: value) }
+		return result?.ok
+	}
+	
+	func set(key: String, value: Float) async -> Bool? {
 		let result = await sendToSockets { await $0.set(key: key, value: value) }
 		return result?.ok
 	}

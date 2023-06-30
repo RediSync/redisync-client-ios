@@ -223,6 +223,18 @@ final class RediSyncSocket: RediSyncEventEmitter
 	func hvals(key: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("hvals", key))
 	}
+	
+	func incr(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("incr", key))
+	}
+
+	func incrby(key: String, increment: Int) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("incrby", key, increment))
+	}
+	
+	func incrbyfloat(key: String, increment: Float) async -> RediSyncSocketFloatResponse? {
+		return RediSyncSocketFloatResponse(await emitRedis("incrbyfloat", key, String(increment)))
+	}
 
 	func keys(pattern: String) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))
@@ -234,6 +246,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func set(key: String, value: Int) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
+	}
+	
+	func set(key: String, value: Float) async -> RediSyncSocketOKResponse? {
+		return RediSyncSocketOKResponse(await emitRedis("set", key, String(value)))
 	}
 	
 	func ttl(key: String) async -> RediSyncSocketIntResponse? {
