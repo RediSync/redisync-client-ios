@@ -452,4 +452,18 @@ final class RediSyncClientTests: XCTestCase
 		let hincrbyfloat2 = await client.hincrbyfloat(key: key1, field: "field", increment: -5)
 		XCTAssertEqual(hincrbyfloat2, 5.6)
 	}
+	
+	func testHKeysReturnsAllFieldNamesInHash() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.hset(key: key1, field: "field1", value: "Hello")
+		await client.hset(key: key1, field: "field2", value: "World")
+		
+		let hkeys1 = await client.hkeys(key: key1)
+		XCTAssertEqual(hkeys1.count, 2)
+		XCTAssertTrue(hkeys1.contains { $0 == "field1" })
+		XCTAssertTrue(hkeys1.contains { $0 == "field2" })
+	}
 }

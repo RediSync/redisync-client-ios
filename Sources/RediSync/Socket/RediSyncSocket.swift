@@ -182,6 +182,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketFloatResponse(await emitRedis("hincrbyfloat", key, field, String(increment)))
 	}
 	
+	func hkeys(key: String) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("hkeys", key))
+	}
+	
 	func hset(key: String, fieldValues: (String, Any)...) async -> RediSyncSocketIntResponse? {
 		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
