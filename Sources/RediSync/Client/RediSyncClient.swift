@@ -119,6 +119,18 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.exists(keys: keys) ?? 0
 	}
 	
+	@discardableResult
+	public func expire(key: String, seconds: Int, expireToken: RediSyncExpireToken? = nil) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.expire(key: key, seconds: seconds, expireToken: expireToken) == 1
+	}
+	
+	@discardableResult
+	public func expireat(key: String, unixTimeSeconds: Int, expireToken: RediSyncExpireToken? = nil) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.expireat(key: key, unixTimeSeconds: unixTimeSeconds, expireToken: expireToken) == 1
+	}
+	
 	public func get(key: String) async -> String? {
 		await connectIfNotConnected()
 		return await sockets?.get(key: key)
@@ -144,6 +156,11 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func set(key: String, value: Int) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.set(key: key, value: value) ?? false
+	}
+	
+	public func ttl(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.ttl(key: key) ?? -1
 	}
 	
 	@discardableResult

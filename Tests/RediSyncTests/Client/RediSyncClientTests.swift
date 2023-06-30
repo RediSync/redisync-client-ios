@@ -227,4 +227,52 @@ final class RediSyncClientTests: XCTestCase
 		let exists3Result = await client.exists(key1, key2, "no-such-key")
 		XCTAssertEqual(exists3Result, 2)
 	}
+	
+	func testExpireSetsATimeoutOnAKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.set(key: key1, value: "Hello")
+
+		let expire1Result = await client.expire(key: key1, seconds: 10)
+		XCTAssertTrue(expire1Result)
+		
+		let ttl1 = await client.ttl(key: key1)
+		XCTAssertEqual(ttl1, 10)
+		
+		await client.set(key: key1, value: "World")
+		
+		let ttl2 = await client.ttl(key: key1)
+		XCTAssertEqual(ttl2, -1)
+		
+		let expire2Result = await client.expire(key: key1, seconds: 10, expireToken: .XX)
+		XCTAssertFalse(expire2Result)
+		
+		let ttl3 = await client.ttl(key: key1)
+		XCTAssertEqual(ttl3, -1)
+		
+		let expire3Result = await client.expire(key: key1, seconds: 10, expireToken: .NX)
+		XCTAssertTrue(expire3Result)
+
+		let ttl4 = await client.ttl(key: key1)
+		XCTAssertEqual(ttl4, 10)
+	}
+	
+	func testExpireAtHasSameEffectAsExpireButTakesUnixTimestamp() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+
+		await client.set(key: key1, value: "Hello")
+		
+		let existsBeforeExpiration = await client.exists(key1)
+		XCTAssertEqual(existsBeforeExpiration, 1)
+		
+		let expireResult = await client.expireat(key: key1, unixTimeSeconds: 1293840000)
+		XCTAssertTrue(expireResult)
+		
+		let doesntExistAfterExpiration = await client.exists(key1)
+		XCTAssertEqual(doesntExistAfterExpiration, 0)
+	}
 }

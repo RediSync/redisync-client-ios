@@ -93,6 +93,22 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("exists", params: keys))
 	}
 	
+	func expire(key: String, seconds: Int, expireToken: RediSyncExpireToken? = nil) async -> RediSyncSocketIntResponse? {
+		if let expireToken = expireToken {
+			return RediSyncSocketIntResponse(await emitRedis("expire", key, seconds, expireToken.rawValue))
+		}
+		
+		return RediSyncSocketIntResponse(await emitRedis("expire", key, seconds))
+	}
+	
+	func expireat(key: String, unixTimeSeconds: Int, expireToken: RediSyncExpireToken? = nil) async -> RediSyncSocketIntResponse? {
+		if let expireToken = expireToken {
+			return RediSyncSocketIntResponse(await emitRedis("expireat", key, unixTimeSeconds, expireToken.rawValue))
+		}
+		
+		return RediSyncSocketIntResponse(await emitRedis("expireat", key, unixTimeSeconds))
+	}
+	
 	func get(key: String) async -> RediSyncSocketStringResponse? {
 		return RediSyncSocketStringResponse(await emitRedis("get", key))
 	}
@@ -111,6 +127,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func set(key: String, value: Int) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
+	}
+	
+	func ttl(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("ttl", key))
 	}
 	
 	@discardableResult
@@ -284,4 +304,11 @@ final class RediSyncSocket: RediSyncEventEmitter
 		}
 	}
 
+}
+
+public enum RediSyncExpireToken: String {
+	case NX = "NX"
+	case XX = "XX"
+	case GT = "GT"
+	case LT = "LT"
 }

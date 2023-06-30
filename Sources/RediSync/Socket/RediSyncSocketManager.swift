@@ -79,6 +79,16 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func expire(key: String, seconds: Int, expireToken: RediSyncExpireToken?) async -> Int? {
+		let result = await sendToSockets { await $0.expire(key: key, seconds: seconds, expireToken: expireToken) }
+		return result?.value
+	}
+	
+	func expireat(key: String, unixTimeSeconds: Int, expireToken: RediSyncExpireToken?) async -> Int? {
+		let result = await sendToSockets { await $0.expireat(key: key, unixTimeSeconds: unixTimeSeconds, expireToken: expireToken) }
+		return result?.value
+	}
+	
 	func get(key: String) async -> String? {
 		let result = await sendToSockets { await $0.get(key: key) }
 		return result?.value
@@ -102,6 +112,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 	func set(key: String, value: Int) async -> Bool? {
 		let result = await sendToSockets { await $0.set(key: key, value: value) }
 		return result?.ok
+	}
+	
+	func ttl(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.ttl(key: key) }
+		return result?.value
 	}
 	
 	private func sendToSockets<T: RediSyncSocketResponse>(_ handler: @escaping RediSyncSocketMessageHandler<T>) async -> T? {
