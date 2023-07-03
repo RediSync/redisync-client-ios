@@ -605,4 +605,284 @@ final class RediSyncClientTests: XCTestCase
 		let incrbyfloat2 = await client.incrbyfloat(key: key1, increment: -5)
 		XCTAssertEqual(incrbyfloat2, 5.6)
 	}
+	
+	func testLIndexReturnsTheElementAtIndexInList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.lpush(key: key1, elements: "World")
+		await client.lpush(key: key1, elements: "Hello")
+		
+		let lindex1 = await client.lindex(key: key1, index: 0)
+		XCTAssertEqual(lindex1, "Hello")
+		
+		let lindex2 = await client.lindex(key: key1, index: -1)
+		XCTAssertEqual(lindex2, "World")
+		
+		let lindex3 = await client.lindex(key: key1, index: 3)
+		XCTAssertNil(lindex3)
+	}
+	
+	func testLInsertInsertsElementInListBeforeOrAfterPivotPoint() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.rpush(key: key1, elements: "Hello")
+		await client.rpush(key: key1, elements: "World")
+		
+		let linsert1 = await client.linsert(key: key1, beforeOrAfter: .before, pivot: "World", element: "There")
+		XCTAssertEqual(linsert1, 3)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 3)
+		XCTAssertEqual(items[0], "Hello")
+		XCTAssertEqual(items[1], "There")
+		XCTAssertEqual(items[2], "World")
+	}
+	
+	func testLLenReturnsTheLengthOfAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.lpush(key: key1, elements: "World")
+		await client.lpush(key: key1, elements: "Hello")
+		
+		let llen1 = await client.llen(key: key1)
+		XCTAssertEqual(llen1, 2)
+	}
+	
+	func testLMoveReturnsAndRemovesTheFirstOrLastElement() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+
+		await client.rpush(key: key1, elements: "one")
+		await client.rpush(key: key1, elements: "two")
+		await client.rpush(key: key1, elements: "three")
+		
+		let lmove1 = await client.lmove(source: key1, destination: key2, sourceLeftOrRight: .right, destinationLeftOrRight: .left)
+		let lmove2 = await client.lmove(source: key1, destination: key2, sourceLeftOrRight: .left, destinationLeftOrRight: .right)
+		
+		XCTAssertEqual(lmove1, "three")
+		XCTAssertEqual(lmove2, "one")
+		
+		let key1Items = await client.lrange(key: key1, start: 0, stop: -1)
+		let key2Items = await client.lrange(key: key2, start: 0, stop: -1)
+		
+		XCTAssertEqual(key1Items.count, 1)
+		XCTAssertEqual(key1Items[0], "two")
+		
+		XCTAssertEqual(key2Items.count, 2)
+		XCTAssertEqual(key2Items[0], "three")
+		XCTAssertEqual(key2Items[1], "one")
+	}
+	
+	func testLPopRemovesAndReturnsTheFirstElementsOfAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.rpush(key: key1, elements: "one", "two", "three", "four", "five")
+		
+		let lpop1 = await client.lpop(key: key1)
+		XCTAssertEqual(lpop1, "one")
+		
+		let lpop2 = await client.lpop(key: key1, count: 2)
+		XCTAssertEqual(lpop2.count, 2)
+		XCTAssertEqual(lpop2[0], "two")
+		XCTAssertEqual(lpop2[1], "three")
+		
+		let remainingItems = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(remainingItems.count, 2)
+		XCTAssertEqual(remainingItems[0], "four")
+		XCTAssertEqual(remainingItems[1], "five")
+		
+		let lpop3 = await client.lpop(key: key1, count: 1)
+		XCTAssertEqual(lpop3.count, 1)
+		XCTAssertEqual(lpop3[0], "four")
+	}
+	
+	func testLPushInsertsElementsAtTheHeadOfAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		let lpush1 = await client.lpush(key: key1, elements: "world")
+		XCTAssertEqual(lpush1, 1)
+
+		let lpush2 = await client.lpush(key: key1, elements: "hello")
+		XCTAssertEqual(lpush2, 2)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 2)
+		XCTAssertEqual(items[0], "hello")
+		XCTAssertEqual(items[1], "world")
+	}
+	
+	func testLPushXInsertsElementAtTheHeadOfAListOnlyIfKeyAlreadyExistsAndHoldsAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.lpush(key: key1, elements: "World")
+		
+		let lpushx1 = await client.lpushx(key: key1, elements: "Hello")
+		XCTAssertEqual(lpushx1, 2)
+
+		let lpushx2 = await client.lpushx(key: key2, elements: "Hello")
+		XCTAssertEqual(lpushx2, 0)
+		
+		let key1Items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(key1Items.count, 2)
+		XCTAssertEqual(key1Items[0], "Hello")
+		XCTAssertEqual(key1Items[1], "World")
+		
+		let key2Items = await client.lrange(key: key2, start: 0, stop: -1)
+		XCTAssertEqual(key2Items.count, 0)
+	}
+	
+	func testLRangeReturnsTheSpecifiedElementsOfAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.rpush(key: key1, elements: "one", "two", "three")
+		
+		let lrange1 = await client.lrange(key: key1, start: 0, stop: 0)
+		XCTAssertEqual(lrange1.count, 1)
+		XCTAssertEqual(lrange1[0], "one")
+		
+		let lrange2 = await client.lrange(key: key1, start: -3, stop: 2)
+		XCTAssertEqual(lrange2.count, 3)
+		XCTAssertEqual(lrange2[0], "one")
+		XCTAssertEqual(lrange2[1], "two")
+		XCTAssertEqual(lrange2[2], "three")
+		
+		let lrange3 = await client.lrange(key: key1, start: -100, stop: 100)
+		XCTAssertEqual(lrange3.count, 3)
+		XCTAssertEqual(lrange3[0], "one")
+		XCTAssertEqual(lrange3[1], "two")
+		XCTAssertEqual(lrange3[2], "three")
+		
+		let lrange4 = await client.lrange(key: key1, start: 5, stop: 10)
+		XCTAssertEqual(lrange4.count, 0)
+	}
+	
+	func testLRemRemoveTheFirstOccurrencesOfElementFromList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.rpush(key: key1, elements: "hello", "hello", "foo", "hello")
+		
+		let lrem1 = await client.lrem(key: key1, count: -2, element: "hello")
+		XCTAssertEqual(lrem1, 2)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 2)
+		XCTAssertEqual(items[0], "hello")
+		XCTAssertEqual(items[1], "foo")
+	}
+	
+	func testLSetSetsTheListElementAtIndex() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.rpush(key: key1, elements: "one", "two", "three")
+		
+		let lset1 = await client.lset(key: key1, index: 0, element: "four")
+		XCTAssertTrue(lset1)
+
+		let lset2 = await client.lset(key: key1, index: -2, element: "five")
+		XCTAssertTrue(lset2)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 3)
+		XCTAssertEqual(items[0], "four")
+		XCTAssertEqual(items[1], "five")
+		XCTAssertEqual(items[2], "three")
+	}
+	
+	func testLTrimTrimsAnExistingListToOnlyContainASpecifiedRange() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.rpush(key: key1, elements: "one", "two", "three")
+
+		let ltrim1 = await client.ltrim(key: key1, start: 1, stop: -1)
+		XCTAssertTrue(ltrim1)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 2)
+		XCTAssertEqual(items[0], "two")
+		XCTAssertEqual(items[1], "three")
+	}
+	
+	func testRPopRemovesAndReturnsTheLastElementOfAList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.rpush(key: key1, elements: "one", "two", "three", "four", "five")
+		
+		let rpop1 = await client.rpop(key: key1)
+		XCTAssertEqual(rpop1, "five")
+		
+		let rpop2 = await client.rpop(key: key1, count: 2)
+		XCTAssertEqual(rpop2.count, 2)
+		XCTAssertEqual(rpop2[0], "four")
+		XCTAssertEqual(rpop2[1], "three")
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 2)
+		XCTAssertEqual(items[0], "one")
+		XCTAssertEqual(items[1], "two")
+	}
+	
+	func testRPushInsertsElementAtTheTailOfList() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		let rpush1 = await client.rpush(key: key1, elements: "hello")
+		XCTAssertEqual(rpush1, 1)
+
+		let rpush2 = await client.rpush(key: key1, elements: "world")
+		XCTAssertEqual(rpush2, 2)
+		
+		let items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(items.count, 2)
+		XCTAssertEqual(items[0], "hello")
+		XCTAssertEqual(items[1], "world")
+	}
+	
+	func testRPushXInsertsElementsAtTheTailOfListOnlyIfListExists() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.rpush(key: key1, elements: "Hello")
+
+		let rpushx1 = await client.rpushx(key: key1, elements: "World")
+		XCTAssertEqual(rpushx1, 2)
+
+		let rpushx2 = await client.rpushx(key: key2, elements: "World")
+		XCTAssertEqual(rpushx2, 0)
+		
+		let key1Items = await client.lrange(key: key1, start: 0, stop: -1)
+		XCTAssertEqual(key1Items.count, 2)
+		XCTAssertEqual(key1Items[0], "Hello")
+		XCTAssertEqual(key1Items[1], "World")
+
+		let key2Items = await client.lrange(key: key2, start: 0, stop: -1)
+		XCTAssertEqual(key2Items.count, 0)
+	}
 }

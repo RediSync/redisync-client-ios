@@ -58,7 +58,7 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		let result = await sendToSockets { await $0.decrby(key: key, decrement: decrement) }
 		return result?.value
 	}
-
+	
 	func del(keys: String...) async -> Int? {
 		let result = await sendToSockets { await $0.del(keys: keys) }
 		return result?.value
@@ -224,6 +224,106 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func lindex(key: String, index: Int) async -> String? {
+		let result = await sendToSockets { await $0.lindex(key: key, index: index) }
+		return result?.value
+	}
+	
+	func linsert(key: String, beforeOrAfter: RediSyncBeforeOrAfter, pivot: RediSyncValue, element: RediSyncValue) async -> Int? {
+		let result = await sendToSockets { await $0.linsert(key: key, beforeOrAfter: beforeOrAfter, pivot: pivot, element: element) }
+		return result?.value
+	}
+	
+	func llen(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.llen(key: key) }
+		return result?.value
+	}
+	
+	func lmove(source: String, destination: String, sourceLeftRight: RediSyncLeftOrRight, destinationLeftRight: RediSyncLeftOrRight) async -> String? {
+		let result = await sendToSockets { await $0.lmove(source: source, destination: destination, sourceLeftRight: sourceLeftRight, destinationLeftRight: destinationLeftRight) }
+		return result?.value
+	}
+	
+	func lpop(key: String) async -> String? {
+		let result = await sendToSockets { await $0.lpop(key: key) }
+		return result?.value
+	}
+	
+	func lpop(key: String, count: Int) async -> [String]? {
+		let result = await sendToSockets { await $0.lpop(key: key, count: count)}
+		return result?.value
+	}
+	
+	func lpush(key: String, elements: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.lpush(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func lpush(key: String, elements: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.lpush(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func lpushx(key: String, elements: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.lpushx(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func lpushx(key: String, elements: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.lpushx(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func lrange(key: String, start: Int, stop: Int) async -> [String]? {
+		let result = await sendToSockets { await $0.lrange(key: key, start: start, stop: stop)}
+		return result?.value
+	}
+	
+	func lrem(key: String, count: Int, element: RediSyncValue) async -> Int? {
+		let result = await sendToSockets { await $0.lrem(key: key, count: count, element: element) }
+		return result?.value
+	}
+	
+	func lset(key: String, index: Int, element: RediSyncValue) async -> Bool? {
+		let result = await sendToSockets { await $0.lset(key: key, index: index, element: element)}
+		return result?.ok
+	}
+	
+	func ltrim(key: String, start: Int, stop: Int) async -> Bool? {
+		let result = await sendToSockets { await $0.ltrim(key: key, start: start, stop: stop) }
+		return result?.ok
+	}
+	
+	func rpop(key: String) async -> String? {
+		let result = await sendToSockets { await $0.rpop(key: key) }
+		return result?.value
+	}
+	
+	func rpop(key: String, count: Int) async -> [String]? {
+		let result = await sendToSockets { await $0.rpop(key: key, count: count)}
+		return result?.value
+	}
+	
+	func rpush(key: String, elements: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.rpush(key: key, elements: elements) }
+		return result?.value
+	}
+
+	func rpush(key: String, elements: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.rpush(key: key, elements: elements) }
+		return result?.value
+	}
+
+	func rpushx(key: String, elements: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.rpushx(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func rpushx(key: String, elements: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.rpushx(key: key, elements: elements) }
+		return result?.value
+	}
+
 	func set(key: String, value: String) async -> Bool? {
 		let result = await sendToSockets { await $0.set(key: key, value: value) }
 		return result?.ok

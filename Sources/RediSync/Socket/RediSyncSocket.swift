@@ -240,6 +240,86 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketStringArrayResponse(await emitRedis("keys", pattern))
 	}
 	
+	func lindex(key: String, index: Int) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("lindex", key, index))
+	}
+	
+	func linsert(key: String, beforeOrAfter: RediSyncBeforeOrAfter, pivot: RediSyncValue, element: RediSyncValue) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("linsert", key, beforeOrAfter.rawValue, pivot, element))
+	}
+	
+	func llen(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("llen", key))
+	}
+	
+	func lmove(source: String, destination: String, sourceLeftRight: RediSyncLeftOrRight, destinationLeftRight: RediSyncLeftOrRight) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("lmove", source, destination, sourceLeftRight.rawValue, destinationLeftRight.rawValue))
+	}
+	
+	func lpop(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("lpop", key))
+	}
+	
+	func lpop(key: String, count: Int) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("lpop", key, count))
+	}
+	
+	func lpush(key: String, elements: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("lpush", params: [key] + elements))
+	}
+	
+	func lpush(key: String, elements: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("lpush", params: [key] + elements))
+	}
+	
+	func lpushx(key: String, elements: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("lpushx", params: [key] + elements))
+	}
+	
+	func lpushx(key: String, elements: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("lpushx", params: [key] + elements))
+	}
+	
+	func lrange(key: String, start: Int, stop: Int) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("lrange", key, start, stop))
+	}
+	
+	func lrem(key: String, count: Int, element: RediSyncValue) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("lrem", key, count, element))
+	}
+	
+	func lset(key: String, index: Int, element: RediSyncValue) async -> RediSyncSocketOKResponse? {
+		return RediSyncSocketOKResponse(await emitRedis("lset", key, index, element))
+	}
+	
+	func ltrim(key: String, start: Int, stop: Int) async -> RediSyncSocketOKResponse? {
+		return RediSyncSocketOKResponse(await emitRedis("ltrim", key, start, stop))
+	}
+	
+	func rpop(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("rpop", key))
+	}
+	
+	func rpop(key: String, count: Int) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("rpop", key, count))
+	}
+
+	func rpush(key: String, elements: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("rpush", params: [key] + elements))
+	}
+	
+	func rpush(key: String, elements: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("rpush", params: [key] + elements))
+	}
+	
+	func rpushx(key: String, elements: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("rpushx", params: [key] + elements))
+	}
+	
+	func rpushx(key: String, elements: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("rpushx", params: [key] + elements))
+	}
+
 	func set(key: String, value: String) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
 	}
@@ -443,3 +523,17 @@ public enum RediSyncGetExExpiration {
 	case PXAT(timestampMilliseconds: Int)
 	case PERSIST
 }
+
+public enum RediSyncBeforeOrAfter: String {
+	case before = "BEFORE"
+	case after = "AFTER"
+}
+
+public enum RediSyncLeftOrRight: String {
+	case left = "LEFT"
+	case right = "RIGHT"
+}
+
+public protocol RediSyncValue { }
+extension Int: RediSyncValue { }
+extension String: RediSyncValue { }

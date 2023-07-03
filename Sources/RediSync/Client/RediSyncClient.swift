@@ -281,6 +281,120 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.keys(pattern: pattern) ?? []
 	}
 	
+	public func lindex(key: String, index: Int) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.lindex(key: key, index: index)
+	}
+	
+	@discardableResult
+	public func linsert(key: String, beforeOrAfter: RediSyncBeforeOrAfter, pivot: RediSyncValue, element: RediSyncValue) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.linsert(key: key, beforeOrAfter: beforeOrAfter, pivot: pivot, element: element) ?? -1
+	}
+	
+	public func llen(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.llen(key: key) ?? 0
+	}
+	
+	@discardableResult
+	public func lmove(source: String, destination: String, sourceLeftOrRight: RediSyncLeftOrRight, destinationLeftOrRight: RediSyncLeftOrRight) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.lmove(source: source, destination: destination, sourceLeftRight: sourceLeftOrRight, destinationLeftRight: destinationLeftOrRight)
+	}
+	
+	@discardableResult
+	public func lpop(key: String) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.lpop(key: key)
+	}
+	
+	@discardableResult
+	public func lpop(key: String, count: Int) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.lpop(key: key, count: count) ?? []
+	}
+	
+	@discardableResult
+	public func lpush(key: String, elements: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.lpush(key: key, elements: elements) ?? 0
+	}
+	
+	@discardableResult
+	public func lpush(key: String, elements: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.lpush(key: key, elements: elements) ?? 0
+	}
+	
+	@discardableResult
+	public func lpushx(key: String, elements: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.lpushx(key: key, elements: elements) ?? 0
+	}
+	
+	@discardableResult
+	public func lpushx(key: String, elements: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.lpushx(key: key, elements: elements) ?? 0
+	}
+	
+	public func lrange(key: String, start: Int, stop: Int) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.lrange(key: key, start: start, stop: stop) ?? []
+	}
+	
+	public func lrem(key: String, count: Int, element: RediSyncValue) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.lrem(key: key, count: count, element: element) ?? 0
+	}
+	
+	public func lset(key: String, index: Int, element: RediSyncValue) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.lset(key: key, index: index, element: element) ?? false
+	}
+	
+	public func ltrim(key: String, start: Int, stop: Int) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.ltrim(key: key, start: start, stop: stop) ?? false
+	}
+	
+	@discardableResult
+	public func rpop(key: String) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.rpop(key: key)
+	}
+	
+	@discardableResult
+	public func rpop(key: String, count: Int) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.rpop(key: key, count: count) ?? []
+	}
+	
+	@discardableResult
+	public func rpush(key: String, elements: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.rpush(key: key, elements: elements) ?? 0
+	}
+	
+	@discardableResult
+	public func rpush(key: String, elements: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.rpush(key: key, elements: elements) ?? 0
+	}
+
+	@discardableResult
+	public func rpushx(key: String, elements: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.rpushx(key: key, elements: elements) ?? 0
+	}
+	
+	@discardableResult
+	public func rpushx(key: String, elements: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.rpushx(key: key, elements: elements) ?? 0
+	}
+
 	@discardableResult
 	public func set(key: String, value: String) async -> Bool {
 		await connectIfNotConnected()
