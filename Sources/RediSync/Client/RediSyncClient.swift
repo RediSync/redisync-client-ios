@@ -394,6 +394,45 @@ open class RediSyncClient: RediSyncEventEmitter
 		await connectIfNotConnected()
 		return await sockets?.rpushx(key: key, elements: elements) ?? 0
 	}
+	
+	@discardableResult
+	public func sadd(key: String, members: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sadd(key: key, members: members) ?? 0
+	}
+	
+	@discardableResult
+	public func sadd(key: String, members: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sadd(key: key, members: members) ?? 0
+	}
+	
+	public func scard(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.scard(key: key) ?? 0
+	}
+	
+	public func sdiff(key: String, keys: String...) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sdiff(key: key, keys: keys) ?? [])
+	}
+
+	public func sdiff(key: String, keys: [String]) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sdiff(key: key, keys: keys) ?? [])
+	}
+	
+	@discardableResult
+	public func sdiffstore(destination: String, key: String, keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sdiffstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+
+	@discardableResult
+	public func sdiffstore(destination: String, key: String, keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sdiffstore(destination: destination, key: key, keys: keys) ?? 0
+	}
 
 	@discardableResult
 	public func set(key: String, value: String) async -> Bool {
@@ -411,6 +450,114 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func set(key: String, value: Float) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.set(key: key, value: value) ?? false
+	}
+	
+	@discardableResult
+	public func setrange(key: String, offset: Int, value: RediSyncValue) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.setrange(key: key, offset: offset, value: value) ?? 0
+	}
+	
+	public func sinter(key: String, keys: String...) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sinter(key: key, keys: keys) ?? [])
+	}
+	
+	public func sinter(key: String, keys: [String]) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sinter(key: key, keys: keys) ?? [])
+	}
+	
+	public func sintercard(key: String, keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sintercard(key: key, keys: keys) ?? 0
+	}
+	
+	public func sintercard(key: String, keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sintercard(key: key, keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func sinterstore(destination: String, key: String, keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sinterstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func sinterstore(destination: String, key: String, keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sinterstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+	
+	public func sismember(key: String, member: RediSyncValue) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.sismember(key: key, member: member) == 1
+	}
+	
+	public func smembers(key: String) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.smembers(key: key) ?? [])
+	}
+	
+	public func smismember(key: String, members: RediSyncValue...) async -> [Bool] {
+		await connectIfNotConnected()
+		return (await sockets?.smismember(key: key, members: members) ?? []).map { $0 == 1 }
+	}
+	
+	public func smismember(key: String, members: [RediSyncValue]) async -> [Bool] {
+		await connectIfNotConnected()
+		return (await sockets?.smismember(key: key, members: members) ?? []).map { $0 == 1 }
+	}
+	
+	@discardableResult
+	public func smove(source: String, destination: String, member: RediSyncValue) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.smove(source: source, destination: destination, member: member) == 1
+	}
+	
+	@discardableResult
+	public func spop(key: String) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.spop(key: key)
+	}
+	
+	@discardableResult
+	public func spop(key: String, count: Int) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.spop(key: key, count: count) ?? []
+	}
+	
+	public func srandmember(key: String) async -> String? {
+		await connectIfNotConnected()
+		return await sockets?.srandmember(key: key)
+	}
+	
+	public func srandmember(key: String, count: Int) async -> [String] {
+		await connectIfNotConnected()
+		return await sockets?.srandmember(key: key, count: count) ?? []
+	}
+	
+	@discardableResult
+	public func srem(key: String, members: RediSyncValue...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.srem(key: key, members: members) ?? 0
+	}
+	
+	@discardableResult
+	public func srem(key: String, members: [RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.srem(key: key, members: members) ?? 0
+	}
+	
+	public func sunion(key: String, keys: String...) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sunion(key: key, keys: keys) ?? [])
+	}
+	
+	public func sunion(key: String, keys: [String]) async -> Set<String> {
+		await connectIfNotConnected()
+		return Set(await sockets?.sunion(key: key, keys: keys) ?? [])
 	}
 	
 	public func ttl(key: String) async -> Int {

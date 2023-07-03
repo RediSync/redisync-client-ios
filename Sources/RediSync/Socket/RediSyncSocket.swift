@@ -319,6 +319,34 @@ final class RediSyncSocket: RediSyncEventEmitter
 	func rpushx(key: String, elements: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("rpushx", params: [key] + elements))
 	}
+	
+	func sadd(key: String, members: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sadd", params: [key] + members))
+	}
+
+	func sadd(key: String, members: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sadd", params: [key] + members))
+	}
+	
+	func scard(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("scard", key))
+	}
+	
+	func sdiff(key: String, keys: String...) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sdiff", params: [key] + keys))
+	}
+	
+	func sdiff(key: String, keys: [String]) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sdiff", params: [key] + keys))
+	}
+	
+	func sdiffstore(destination: String, key: String, keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sdiffstore", params: [destination, key] + keys))
+	}
+
+	func sdiffstore(destination: String, key: String, keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sdiffstore", params: [destination, key] + keys))
+	}
 
 	func set(key: String, value: String) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
@@ -330,6 +358,86 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func set(key: String, value: Float) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, String(value)))
+	}
+	
+	func setrange(key: String, offset: Int, value: RediSyncValue) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("setrange", key, offset, value))
+	}
+	
+	func sinter(key: String, keys: String...) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sinter", params: [key] + keys))
+	}
+	
+	func sinter(key: String, keys: [String]) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sinter", params: [key] + keys))
+	}
+	
+	func sintercard(key: String, keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sintercard", params: [key] + keys))
+	}
+	
+	func sintercard(key: String, keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sintercard", params: [key] + keys))
+	}
+	
+	func sinterstore(destination: String, key: String, keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sinterstore", params: [destination, key] + keys))
+	}
+	
+	func sinterstore(destination: String, key: String, keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sinterstore", params: [destination, key] + keys))
+	}
+	
+	func sismember(key: String, member: RediSyncValue) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sismember", key, member))
+	}
+	
+	func smembers(key: String) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("smembers", key))
+	}
+	
+	func smismember(key: String, members: RediSyncValue...) async -> RediSyncSocketIntArrayResponse? {
+		return RediSyncSocketIntArrayResponse(await emitRedis("smismember", params: [key] + members))
+	}
+	
+	func smismember(key: String, members: [RediSyncValue]) async -> RediSyncSocketIntArrayResponse? {
+		return RediSyncSocketIntArrayResponse(await emitRedis("smismember", params: [key] + members))
+	}
+	
+	func smove(source: String, destination: String, member: RediSyncValue) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("smove", source, destination, member))
+	}
+	
+	func spop(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("spop", key))
+	}
+	
+	func spop(key: String, count: Int) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("spop", key, count))
+	}
+	
+	func srandmember(key: String) async -> RediSyncSocketStringResponse? {
+		return RediSyncSocketStringResponse(await emitRedis("srandmember", key))
+	}
+	
+	func srandmember(key: String, count: Int) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("srandmember", key, count))
+	}
+	
+	func srem(key: String, members: RediSyncValue...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("srem", params: [key] + members))
+	}
+	
+	func srem(key: String, members: [RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("srem", params: [key] + members))
+	}
+	
+	func sunion(key: String, keys: String...) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sunion", params: [key] + keys))
+	}
+	
+	func sunion(key: String, keys: [String]) async -> RediSyncSocketStringArrayResponse? {
+		return RediSyncSocketStringArrayResponse(await emitRedis("sunion", params: [key] + keys))
 	}
 	
 	func ttl(key: String) async -> RediSyncSocketIntResponse? {

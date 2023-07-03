@@ -308,12 +308,12 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		let result = await sendToSockets { await $0.rpush(key: key, elements: elements) }
 		return result?.value
 	}
-
+	
 	func rpush(key: String, elements: [RediSyncValue]) async -> Int? {
 		let result = await sendToSockets { await $0.rpush(key: key, elements: elements) }
 		return result?.value
 	}
-
+	
 	func rpushx(key: String, elements: RediSyncValue...) async -> Int? {
 		let result = await sendToSockets { await $0.rpushx(key: key, elements: elements) }
 		return result?.value
@@ -321,6 +321,41 @@ class RediSyncSocketManager: RediSyncEventEmitter
 	
 	func rpushx(key: String, elements: [RediSyncValue]) async -> Int? {
 		let result = await sendToSockets { await $0.rpushx(key: key, elements: elements) }
+		return result?.value
+	}
+	
+	func sadd(key: String, members: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.sadd(key: key, members: members) }
+		return result?.value
+	}
+	
+	func sadd(key: String, members: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.sadd(key: key, members: members) }
+		return result?.value
+	}
+	
+	func scard(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.scard(key: key) }
+		return result?.value
+	}
+	
+	func sdiff(key: String, keys: String...) async -> [String]? {
+		let result = await sendToSockets { await $0.sdiff(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sdiff(key: String, keys: [String]) async -> [String]? {
+		let result = await sendToSockets { await $0.sdiff(key: key, keys: keys)}
+		return result?.value
+	}
+	
+	func sdiffstore(destination: String, key: String, keys: String...) async -> Int? {
+		let result = await sendToSockets { await $0.sdiffstore(destination: destination, key: key, keys: keys) }
+		return result?.value
+	}
+
+	func sdiffstore(destination: String, key: String, keys: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.sdiffstore(destination: destination, key: key, keys: keys) }
 		return result?.value
 	}
 
@@ -339,6 +374,106 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.ok
 	}
 	
+	func setrange(key: String, offset: Int, value: RediSyncValue) async -> Int? {
+		let result = await sendToSockets { await $0.setrange(key: key, offset: offset, value: value) }
+		return result?.value
+	}
+	
+	func sinter(key: String, keys: String...) async -> [String]? {
+		let result = await sendToSockets { await $0.sinter(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sinter(key: String, keys: [String]) async -> [String]? {
+		let result = await sendToSockets { await $0.sinter(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sintercard(key: String, keys: String...) async -> Int? {
+		let result = await sendToSockets { await $0.sintercard(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sintercard(key: String, keys: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.sintercard(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sinterstore(destination: String, key: String, keys: String...) async -> Int? {
+		let result = await sendToSockets { await $0.sinterstore(destination: destination, key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sinterstore(destination: String, key: String, keys: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.sinterstore(destination: destination, key: key, keys: keys) }
+		return result?.value
+	}
+
+	func sismember(key: String, member: RediSyncValue) async -> Int? {
+		let result = await sendToSockets { await $0.sismember(key: key, member: member) }
+		return result?.value
+	}
+	
+	func smembers(key: String) async -> [String]? {
+		let result = await sendToSockets { await $0.smembers(key: key)}
+		return result?.value
+	}
+	
+	func smismember(key: String, members: RediSyncValue...) async -> [Int]? {
+		let result = await sendToSockets { await $0.smismember(key: key, members: members)}
+		return result?.value
+	}
+	
+	func smismember(key: String, members: [RediSyncValue]) async -> [Int]? {
+		let result = await sendToSockets { await $0.smismember(key: key, members: members)}
+		return result?.value
+	}
+	
+	func smove(source: String, destination: String, member: RediSyncValue) async -> Int? {
+		let result = await sendToSockets { await $0.smove(source: source, destination: destination, member: member) }
+		return result?.value
+	}
+	
+	func spop(key: String) async -> String? {
+		let result = await sendToSockets { await $0.spop(key: key) }
+		return result?.value
+	}
+	
+	func spop(key: String, count: Int) async -> [String]? {
+		let result = await sendToSockets { await $0.spop(key: key, count: count) }
+		return result?.value
+	}
+	
+	func srandmember(key: String) async -> String? {
+		let result = await sendToSockets { await $0.srandmember(key: key) }
+		return result?.value
+	}
+
+	func srandmember(key: String, count: Int) async -> [String]? {
+		let result = await sendToSockets { await $0.srandmember(key: key, count: count) }
+		return result?.value
+	}
+	
+	func srem(key: String, members: RediSyncValue...) async -> Int? {
+		let result = await sendToSockets { await $0.srem(key: key, members: members) }
+		return result?.value
+	}
+
+	func srem(key: String, members: [RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.srem(key: key, members: members) }
+		return result?.value
+	}
+	
+	func sunion(key: String, keys: String...) async -> [String]? {
+		let result = await sendToSockets { await $0.sunion(key: key, keys: keys) }
+		return result?.value
+	}
+	
+	func sunion(key: String, keys: [String]) async -> [String]? {
+		let result = await sendToSockets { await $0.sunion(key: key, keys: keys) }
+		return result?.value
+	}
+
 	func ttl(key: String) async -> Int? {
 		let result = await sendToSockets { await $0.ttl(key: key) }
 		return result?.value

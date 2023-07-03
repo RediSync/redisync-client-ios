@@ -885,4 +885,302 @@ final class RediSyncClientTests: XCTestCase
 		let key2Items = await client.lrange(key: key2, start: 0, stop: -1)
 		XCTAssertEqual(key2Items.count, 0)
 	}
+	
+	func testSAddAddsMembersToASet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		let sadd1 = await client.sadd(key: key1, members: "Hello")
+		XCTAssertEqual(sadd1, 1)
+
+		let sadd2 = await client.sadd(key: key1, members: "World")
+		XCTAssertEqual(sadd2, 1)
+
+		let sadd3 = await client.sadd(key: key1, members: "World")
+		XCTAssertEqual(sadd3, 0)
+		
+		let sadd4 = await client.sadd(key: key1, members: "World", "one", "Hello", "two")
+		XCTAssertEqual(sadd4, 2)
+		
+		let members = await client.smembers(key: key1)
+		XCTAssertEqual(members.count, 4)
+		XCTAssertTrue(members.contains("Hello"))
+		XCTAssertTrue(members.contains("World"))
+		XCTAssertTrue(members.contains("one"))
+		XCTAssertTrue(members.contains("two"))
+		XCTAssertFalse(members.contains("three"))
+	}
+	
+	func testSCardReturnsTheCountOfMembersInSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.sadd(key: key1, members: "Hello", "World")
+		
+		let scard1 = await client.scard(key: key1)
+		
+		XCTAssertEqual(scard1, 2)
+	}
+	
+	func testSDiffReturnsTheMembersInSetThatDoNotExistInOtherSets() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key2, members: "c", "d", "e")
+		
+		let sdiff1 = await client.sdiff(key: key1, keys: key2)
+		XCTAssertEqual(sdiff1.count, 2)
+		XCTAssertTrue(sdiff1.contains("a"))
+		XCTAssertTrue(sdiff1.contains("b"))
+	}
+	
+	func testSDiffStoreStoresTheMembersThatResultFromTakingTheDifferenceOfSets() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let destination = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key2, members: "c", "d", "e")
+
+		let sdiffstore1 = await client.sdiffstore(destination: destination, key: key1, keys: key2)
+		XCTAssertEqual(sdiffstore1, 2)
+		
+		let members = await client.smembers(key: destination)
+		XCTAssertEqual(members.count, 2)
+		XCTAssertTrue(members.contains("a"))
+		XCTAssertTrue(members.contains("b"))
+	}
+	
+	func testSetRangeOverridesPartOfString() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello World")
+		
+		let setrange1 = await client.setrange(key: key1, offset: 6, value: "Redis")
+		XCTAssertEqual(setrange1, 11)
+		
+		let value1 = await client.get(key: key1)
+		XCTAssertEqual(value1, "Hello Redis")
+		
+		let setrange2 = await client.setrange(key: key2, offset: 6, value: "Redis")
+		XCTAssertEqual(setrange2, 11)
+		
+		let value2 = await client.get(key: key2)
+		XCTAssertEqual(value2, "\0\0\0\0\0\0Redis")
+	}
+	
+	func testSInterReturnsTheMembersOfASetThatIntersectWithAGivenSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key2, members: "c", "d", "e")
+
+		let sinter1 = await client.sinter(key: key1, keys: key2)
+		XCTAssertEqual(sinter1.count, 1)
+		XCTAssertTrue(sinter1.contains("c"))
+	}
+	
+	func testSIntercardReturnsTheNumberOfMembersResultingFromTheIntersectionOfSets() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c", "d")
+		await client.sadd(key: key2, members: "c", "d", "e")
+		
+		let sintercard1 = await client.sintercard(key: key1, keys: key2)
+		XCTAssertEqual(sintercard1, 2)
+	}
+	
+	func testSInterstoreStoresTheIntersectionOfSets() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let destination = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key2, members: "c", "d", "e")
+
+		let sinterstore1 = await client.sinterstore(destination: destination, key: key1, keys: key2)
+		XCTAssertEqual(sinterstore1, 1)
+		
+		let members = await client.smembers(key: destination)
+		XCTAssertEqual(members.count, 1)
+		XCTAssertTrue(members.contains("c"))
+	}
+	
+	func testSIsmemberReturnsTrueIfMemberIsPartOfSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "one")
+
+		let sismember1 = await client.sismember(key: key1, member: "one")
+		XCTAssertTrue(sismember1)
+
+		let sismember2 = await client.sismember(key: key1, member: "two")
+		XCTAssertFalse(sismember2)
+	}
+	
+	func testSMembersReturnsAllTheMembersOfASet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "Hello", "World")
+		
+		let members = await client.smembers(key: key1)
+		XCTAssertEqual(members.count, 2)
+		XCTAssertTrue(members.contains("Hello"))
+		XCTAssertTrue(members.contains("World"))
+		XCTAssertFalse(members.contains("Redis"))
+	}
+	
+	func testSMIsmemberReturnsWhetherMultipleMembersArePartOfSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "one")
+
+		let smismember1 = await client.smismember(key: key1, members: "one", "two")
+		XCTAssertEqual(smismember1.count, 2)
+		XCTAssertTrue(smismember1[0])
+		XCTAssertFalse(smismember1[1])
+	}
+	
+	func testSMoveMovesMemberFromSourceSetToDestination() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "one", "two")
+		await client.sadd(key: key2, members: "three")
+
+		let smove1 = await client.smove(source: key1, destination: key2, member: "two")
+		XCTAssertTrue(smove1)
+		
+		let key1Members = await client.smembers(key: key1)
+		XCTAssertEqual(key1Members.count, 1)
+		XCTAssertTrue(key1Members.contains("one"))
+		
+		let key2Members = await client.smembers(key: key2)
+		XCTAssertEqual(key2Members.count, 2)
+		XCTAssertTrue(key2Members.contains("two"))
+		XCTAssertTrue(key2Members.contains("three"))
+	}
+	
+	func testSPopRemovesAndReturnsOneOrMoreRandomElementsFromSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		var members: Set<String> = ["one", "two", "three"]
+		
+		await client.sadd(key: key1, members: Array(members))
+		
+		let poppedMember = await client.spop(key: key1)
+		XCTAssertNotNil(poppedMember)
+		XCTAssertTrue(members.contains(poppedMember!))
+		
+		let membersAfterPop = await client.smembers(key: key1)
+		XCTAssertEqual(membersAfterPop.count, 2)
+		XCTAssertFalse(membersAfterPop.contains(poppedMember!))
+		
+		members.remove(poppedMember!)
+		members.insert("four")
+		members.insert("five")
+		await client.sadd(key: key1, members: "four", "five")
+		
+		let poppedMembers = await client.spop(key: key1, count: 3)
+		XCTAssertEqual(poppedMembers.count, 3)
+		
+		for member in poppedMembers {
+			XCTAssertTrue(member.contains(member))
+		}
+		
+		let membersAfterPop2 = await client.smembers(key: key1)
+		XCTAssertEqual(membersAfterPop2.count, 1)
+	}
+	
+	func testSRandmemberReturnsARandomElementFromSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		var members: Set<String> = ["one", "two", "three"]
+		
+		await client.sadd(key: key1, members: Array(members))
+		
+		let randMember = await client.srandmember(key: key1)
+		XCTAssertNotNil(randMember)
+		XCTAssertTrue(members.contains(randMember!))
+		
+		let randMembers1 = await client.srandmember(key: key1, count: 2)
+		XCTAssertEqual(randMembers1.count, 2)
+		XCTAssertTrue(members.contains(randMembers1[0]))
+		XCTAssertTrue(members.contains(randMembers1[1]))
+		
+		let randMembers2 = await client.srandmember(key: key1, count: -5)
+		XCTAssertEqual(randMembers2.count, 5)
+		XCTAssertTrue(members.contains(randMembers2[0]))
+		XCTAssertTrue(members.contains(randMembers2[1]))
+		XCTAssertTrue(members.contains(randMembers2[2]))
+		XCTAssertTrue(members.contains(randMembers2[3]))
+		XCTAssertTrue(members.contains(randMembers2[4]))
+	}
+	
+	func testSRemRemovesSpecifiedMemberFromSet() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+
+		await client.sadd(key: key1, members: "one", "two", "three")
+		
+		let srem1 = await client.srem(key: key1, members: "one")
+		XCTAssertEqual(srem1, 1)
+		
+		let srem2 = await client.srem(key: key1, members: "four")
+		XCTAssertEqual(srem2, 1)
+
+		let members = await client.smembers(key: key1)
+		XCTAssertEqual(members.count, 2)
+		XCTAssertTrue(members.contains("two"))
+		XCTAssertTrue(members.contains("three"))
+	}
+	
+	func testSUnionReturnsTheMembersResultingFromTheUnionOfSets() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key1, members: "c", "d", "e")
+
+		let sunion1 = await client.sunion(key: key1, keys: key2)
+		XCTAssertEqual(sunion1.count, 5)
+		XCTAssertTrue(sunion1.contains("a"))
+		XCTAssertTrue(sunion1.contains("b"))
+		XCTAssertTrue(sunion1.contains("c"))
+		XCTAssertTrue(sunion1.contains("d"))
+		XCTAssertTrue(sunion1.contains("e"))
+	}
 }
