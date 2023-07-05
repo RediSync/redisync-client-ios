@@ -1125,7 +1125,7 @@ final class RediSyncClientTests: XCTestCase
 		
 		let key1 = UUID().uuidString
 
-		var members: Set<String> = ["one", "two", "three"]
+		let members: Set<String> = ["one", "two", "three"]
 		
 		await client.sadd(key: key1, members: Array(members))
 		
@@ -1204,5 +1204,44 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertTrue(members.contains("c"))
 		XCTAssertTrue(members.contains("d"))
 		XCTAssertTrue(members.contains("e"))
+	}
+	
+	func testStrlenReturnsTheLengthOfStringAtKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello World")
+		
+		let strlen1 = await client.strlen(key: key1)
+		XCTAssertEqual(strlen1, 11)
+		
+		let strlen2 = await client.strlen(key: "non-existing")
+		XCTAssertEqual(strlen2, 0)
+	}
+	
+	func testTouchAltersTheLastAccessTimeOfKey() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello")
+		await client.set(key: key2, value: "World")
+		
+		let touch = await client.touch(keys: key1, key2)
+		XCTAssertEqual(touch, 2)
+	}
+	
+	func testTTLReturnsTheTimeToLiveOfAKeyWithATimeout() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello")
+		await client.expire(key: key1, seconds: 10)
+		
+		let ttl = await client.ttl(key: key1)
+		XCTAssertEqual(ttl, 10)
 	}
 }

@@ -454,6 +454,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func strlen(key: String) async -> Int? {
+		let result = await sendToSockets { await $0.strlen(key: key) }
+		return result?.value
+	}
+	
 	func sunion(key: String, keys: String...) async -> [String]? {
 		let result = await sendToSockets { await $0.sunion(key: key, keys: keys) }
 		return result?.value
@@ -473,7 +478,17 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		let result = await sendToSockets { await $0.sunionstore(destination: destination, key: key, keys: keys) }
 		return result?.value
 	}
-
+	
+	func touch(keys: String...) async -> Int? {
+		let result = await sendToSockets { await $0.touch(keys: keys) }
+		return result?.value
+	}
+	
+	func touch(keys: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.touch(keys: keys) }
+		return result?.value
+	}
+	
 	func ttl(key: String) async -> Int? {
 		let result = await sendToSockets { await $0.ttl(key: key) }
 		return result?.value

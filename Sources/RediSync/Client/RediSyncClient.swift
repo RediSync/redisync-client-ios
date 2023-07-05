@@ -537,6 +537,11 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.srem(key: key, members: members) ?? 0
 	}
 	
+	public func strlen(key: String) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.strlen(key: key) ?? 0
+	}
+	
 	public func sunion(key: String, keys: String...) async -> Set<String> {
 		await connectIfNotConnected()
 		return Set(await sockets?.sunion(key: key, keys: keys) ?? [])
@@ -557,6 +562,18 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func sunionstore(destination: String, key: String, keys: [String]) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.sunionstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func touch(keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.touch(keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func touch(keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.touch(keys: keys) ?? 0
 	}
 	
 	public func ttl(key: String) async -> Int {

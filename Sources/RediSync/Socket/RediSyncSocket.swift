@@ -424,6 +424,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("srem", params: [key] + members))
 	}
 	
+	func strlen(key: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("strlen", key))
+	}
+	
 	func sunion(key: String, keys: String...) async -> RediSyncSocketStringArrayResponse? {
 		return RediSyncSocketStringArrayResponse(await emitRedis("sunion", params: [key] + keys))
 	}
@@ -438,6 +442,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func sunionstore(destination: String, key: String, keys: [String]) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("sunionstore", params: [destination, key] + keys))
+	}
+	
+	func touch(keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("touch", params: keys))
+	}
+	
+	func touch(keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("touch", params: keys))
 	}
 	
 	func ttl(key: String) async -> RediSyncSocketIntResponse? {
