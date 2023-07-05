@@ -1158,7 +1158,7 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertEqual(srem1, 1)
 		
 		let srem2 = await client.srem(key: key1, members: "four")
-		XCTAssertEqual(srem2, 1)
+		XCTAssertEqual(srem2, 0)
 
 		let members = await client.smembers(key: key1)
 		XCTAssertEqual(members.count, 2)

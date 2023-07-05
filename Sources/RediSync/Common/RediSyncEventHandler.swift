@@ -43,9 +43,9 @@ open class RediSyncEventEmitter: NSObject
 	private var handlerIdsByEvent: [String: [UUID]] = [:]
 	
 	open func emit(_ event: String, args: Any? = nil) {
+		let handlerIds = handlerIdsByEvent[event] ?? []
+		
 		Task {
-			let handlerIds = handlerIdsByEvent[event] ?? []
-			
 			for handlerId in handlerIds {
 				handler(handlerId)?.emit(args)
 			}
