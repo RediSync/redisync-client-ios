@@ -1183,4 +1183,26 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertTrue(sunion1.contains("d"))
 		XCTAssertTrue(sunion1.contains("e"))
 	}
+	
+	func testSUnionstoreStoresTheResultOfUnionOfSetsAndReturnsNumberOfMemebers() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let destination = UUID().uuidString
+		
+		await client.sadd(key: key1, members: "a", "b", "c")
+		await client.sadd(key: key2, members: "c", "d", "e")
+
+		let sunionstore = await client.sunionstore(destination: destination, key: key1, keys: key2)
+		XCTAssertEqual(sunionstore, 5)
+		
+		let members = await client.smembers(key: destination)
+		XCTAssertEqual(members.count, 5)
+		XCTAssertTrue(members.contains("a"))
+		XCTAssertTrue(members.contains("b"))
+		XCTAssertTrue(members.contains("c"))
+		XCTAssertTrue(members.contains("d"))
+		XCTAssertTrue(members.contains("e"))
+	}
 }

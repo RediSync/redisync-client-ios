@@ -440,6 +440,14 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketStringArrayResponse(await emitRedis("sunion", params: [key] + keys))
 	}
 	
+	func sunionstore(destination: String, key: String, keys: String...) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sunionstore", params: [destination, key] + keys))
+	}
+	
+	func sunionstore(destination: String, key: String, keys: [String]) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("sunionstore", params: [destination, key] + keys))
+	}
+	
 	func ttl(key: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("ttl", key))
 	}

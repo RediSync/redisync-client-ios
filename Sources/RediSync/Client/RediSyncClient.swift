@@ -560,6 +560,18 @@ open class RediSyncClient: RediSyncEventEmitter
 		return Set(await sockets?.sunion(key: key, keys: keys) ?? [])
 	}
 	
+	@discardableResult
+	public func sunionstore(destination: String, key: String, keys: String...) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sunionstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+	
+	@discardableResult
+	public func sunionstore(destination: String, key: String, keys: [String]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.sunionstore(destination: destination, key: key, keys: keys) ?? 0
+	}
+	
 	public func ttl(key: String) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.ttl(key: key) ?? -1

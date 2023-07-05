@@ -473,6 +473,16 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		let result = await sendToSockets { await $0.sunion(key: key, keys: keys) }
 		return result?.value
 	}
+	
+	func sunionstore(destination: String, key: String, keys: String...) async -> Int? {
+		let result = await sendToSockets { await $0.sunionstore(destination: destination, key: key, keys: keys) }
+		return result?.value
+	}
+
+	func sunionstore(destination: String, key: String, keys: [String]) async -> Int? {
+		let result = await sendToSockets { await $0.sunionstore(destination: destination, key: key, keys: keys) }
+		return result?.value
+	}
 
 	func ttl(key: String) async -> Int? {
 		let result = await sendToSockets { await $0.ttl(key: key) }
