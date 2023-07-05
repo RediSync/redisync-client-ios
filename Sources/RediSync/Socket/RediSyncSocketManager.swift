@@ -39,7 +39,7 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		}
 	}
 	
-	func append(key: String, value: String) async -> Int? {
+	func append(key: String, value: RediSyncValue) async -> Int? {
 		let result = await sendToSockets { await $0.append(key: key, value: value) }
 		return result?.value
 	}
@@ -149,6 +149,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hincrbydouble(key: String, field: String, increment: Double) async -> Double? {
+		let result = await sendToSockets { await $0.hincrbydouble(key: key, field: field, increment: increment) }
+		return result?.value
+	}
+	
 	func hincrbyfloat(key: String, field: String, increment: Float) async -> Float? {
 		let result = await sendToSockets { await $0.hincrbyfloat(key: key, field: field, increment: increment) }
 		return result?.value
@@ -174,22 +179,17 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
-	func hset(key: String, fieldValues: (String, Any)...) async -> Int? {
+	func hset(key: String, fieldValues: (String, RediSyncValue)...) async -> Int? {
 		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
 		return result?.value
 	}
 	
-	func hset(key: String, fieldValues: [(String, Any)]) async -> Int? {
+	func hset(key: String, fieldValues: [(String, RediSyncValue)]) async -> Int? {
 		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
 		return result?.value
 	}
 	
-	func hsetnx(key: String, field: String, value: String) async -> Int? {
-		let result = await sendToSockets { await $0.hsetnx(key: key, field: field, value: value) }
-		return result?.value
-	}
-	
-	func hsetnx(key: String, field: String, value: Int) async -> Int? {
+	func hsetnx(key: String, field: String, value: RediSyncValue) async -> Int? {
 		let result = await sendToSockets { await $0.hsetnx(key: key, field: field, value: value) }
 		return result?.value
 	}
@@ -359,17 +359,7 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 
-	func set(key: String, value: String) async -> Bool? {
-		let result = await sendToSockets { await $0.set(key: key, value: value) }
-		return result?.ok
-	}
-	
-	func set(key: String, value: Int) async -> Bool? {
-		let result = await sendToSockets { await $0.set(key: key, value: value) }
-		return result?.ok
-	}
-	
-	func set(key: String, value: Float) async -> Bool? {
+	func set(key: String, value: RediSyncValue) async -> Bool? {
 		let result = await sendToSockets { await $0.set(key: key, value: value) }
 		return result?.ok
 	}

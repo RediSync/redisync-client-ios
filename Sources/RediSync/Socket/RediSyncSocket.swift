@@ -61,7 +61,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 		dispose()
 	}
 	
-	func append(key: String, value: String) async -> RediSyncSocketIntResponse? {
+	func append(key: String, value: RediSyncValue) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("append", key, value))
 	}
 	
@@ -178,6 +178,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("hincrby", key, field, increment))
 	}
 	
+	func hincrbydouble(key: String, field: String, increment: Double) async -> RediSyncSocketDoubleResponse? {
+		return RediSyncSocketDoubleResponse(await emitRedis("hincrbyfloat", key, field, increment))
+	}
+	
 	func hincrbyfloat(key: String, field: String, increment: Float) async -> RediSyncSocketFloatResponse? {
 		return RediSyncSocketFloatResponse(await emitRedis("hincrbyfloat", key, field, String(increment)))
 	}
@@ -198,7 +202,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketArrayResponse(await emitRedis("hmget", params: [key] + fields))
 	}
 	
-	func hset(key: String, fieldValues: (String, Any)...) async -> RediSyncSocketIntResponse? {
+	func hset(key: String, fieldValues: (String, RediSyncValue)...) async -> RediSyncSocketIntResponse? {
 		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
 	}
@@ -208,14 +212,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
 	}
 	
-	func hsetnx(key: String, field: String, value: String) async -> RediSyncSocketIntResponse? {
+	func hsetnx(key: String, field: String, value: RediSyncValue) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("hsetnx", key, field, value))
 	}
 
-	func hsetnx(key: String, field: String, value: Int) async -> RediSyncSocketIntResponse? {
-		return RediSyncSocketIntResponse(await emitRedis("hsetnx", key, field, value))
-	}
-	
 	func hstrlen(key: String, field: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("hstrlen", key, field))
 	}
@@ -348,18 +348,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("sdiffstore", params: [destination, key] + keys))
 	}
 
-	func set(key: String, value: String) async -> RediSyncSocketOKResponse? {
+	func set(key: String, value: RediSyncValue) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
 	}
-	
-	func set(key: String, value: Int) async -> RediSyncSocketOKResponse? {
-		return RediSyncSocketOKResponse(await emitRedis("set", key, value))
-	}
-	
-	func set(key: String, value: Float) async -> RediSyncSocketOKResponse? {
-		return RediSyncSocketOKResponse(await emitRedis("set", key, String(value)))
-	}
-	
+		
 	func setrange(key: String, offset: Int, value: RediSyncValue) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("setrange", key, offset, value))
 	}
@@ -651,5 +643,6 @@ public enum RediSyncLeftOrRight: String {
 }
 
 public protocol RediSyncValue { }
+extension Double: RediSyncValue { }
 extension Int: RediSyncValue { }
 extension String: RediSyncValue { }

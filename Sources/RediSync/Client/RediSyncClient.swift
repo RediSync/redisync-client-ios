@@ -8,9 +8,8 @@
 import Foundation
 import os
 
-
 @available(macOS 13.0, *)
-@objc
+@objcMembers
 open class RediSyncClient: RediSyncEventEmitter
 {
 	public private(set) var status: RediSyncConnectionStatus = .notConnected
@@ -72,7 +71,7 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
-	public func append(key: String, value: String) async -> Int {
+	public func append(key: String, value: RediSyncValue) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.append(key: key, value: value) ?? 0
 	}
@@ -193,6 +192,12 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func hincrybydouble(key: String, field: String, increment: Double) async -> Double {
+		await connectIfNotConnected()
+		return await sockets?.hincrbydouble(key: key, field: field, increment: increment) ?? 0.0
+	}
+	
+	@discardableResult
 	public func hincrbyfloat(key: String, field: String, increment: Float) async -> Float {
 		await connectIfNotConnected()
 		return await sockets?.hincrbyfloat(key: key, field: field, increment: increment) ?? 0.0
@@ -219,31 +224,25 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
-	public func hset(key: String, fieldValues: (String, Any)...) async -> Int {
+	public func hset(key: String, fieldValues: (String, RediSyncValue)...) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
 	}
 	
 	@discardableResult
-	public func hset(key: String, fieldValues: [(String, Any)]) async -> Int {
+	public func hset(key: String, fieldValues: [(String, RediSyncValue)]) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
 	}
 	
 	@discardableResult
-	public func hset(key: String, field: String, value: Any) async -> Bool {
+	public func hset(key: String, field: String, value: RediSyncValue) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.hset(key: key, fieldValues: (field, value)) == 1
 	}
 	
 	@discardableResult
-	public func hsetnx(key: String, field: String, value: String) async -> Bool {
-		await connectIfNotConnected()
-		return await sockets?.hsetnx(key: key, field: field, value: value) == 1
-	}
-	
-	@discardableResult
-	public func hsetnx(key: String, field: String, value: Int) async -> Bool {
+	public func hsetnx(key: String, field: String, value: RediSyncValue) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.hsetnx(key: key, field: field, value: value) == 1
 	}
@@ -435,19 +434,7 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 
 	@discardableResult
-	public func set(key: String, value: String) async -> Bool {
-		await connectIfNotConnected()
-		return await sockets?.set(key: key, value: value) ?? false
-	}
-	
-	@discardableResult
-	public func set(key: String, value: Int) async -> Bool {
-		await connectIfNotConnected()
-		return await sockets?.set(key: key, value: value) ?? false
-	}
-	
-	@discardableResult
-	public func set(key: String, value: Float) async -> Bool {
+	public func set(key: String, value: RediSyncValue) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.set(key: key, value: value) ?? false
 	}

@@ -13,11 +13,11 @@ class RediSyncSocketFloatResponse: RediSyncSocketResponse
 		if let value = data?.first as? Float {
 			self.value = value
 		}
-		else if let value = data?.first as? Int {
-			self.value = Float(value)
-		}
 		else if let valueString = data?.first as? String, let value = Float(valueString) {
 			self.value = value
+		}
+		else if let value = data?.first as? Int {
+			self.value = Float(value)
 		}
 		else {
 			return nil
