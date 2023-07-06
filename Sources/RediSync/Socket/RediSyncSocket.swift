@@ -25,7 +25,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 		didSet {
 			logger.debug("Socket '\(self.url, privacy: .public)' state changed: \(self.state.rawValue, privacy: .public)")
 			
-			emit("state-changed", args: state)
+			emit("state-changed", state)
 			
 			if state == .connected {
 				emit("connected")
@@ -37,7 +37,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 	}
 	
 	internal let url: URL
-
+	
 	private let logger = Logger(subsystem: "RediSync", category: "RediSyncSocket")
 	private let rs: String?
 	
@@ -169,9 +169,13 @@ final class RediSyncSocket: RediSyncEventEmitter
 	func hget(key: String, field: String) async -> RediSyncSocketStringResponse? {
 		return RediSyncSocketStringResponse(await emitRedis("hget", key, field))
 	}
-	
+		
 	func hgetall(key: String) async -> RediSyncSocketDictResponse? {
 		return RediSyncSocketDictResponse(await emitRedis("hgetall", key))
+	}
+	
+	func hgetInt(key: String, field: String) async -> RediSyncSocketIntResponse? {
+		return RediSyncSocketIntResponse(await emitRedis("hget", key, field))
 	}
 	
 	func hincrby(key: String, field: String, increment: Int) async -> RediSyncSocketIntResponse? {
@@ -294,6 +298,16 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func ltrim(key: String, start: Int, stop: Int) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("ltrim", key, start, stop))
+	}
+	
+	func offSocketEvent(id: UUID) {
+		socket?.off(id: id)
+	}
+	
+	func onSocketEvent(_ eventName: String, listener: @escaping ([String: Any]) -> Void) -> UUID? {
+		return socket?.on(eventName, callback: { data, _ in
+			listener(data.first as? [String: Any] ?? [:])
+		})
 	}
 	
 	func rpop(key: String) async -> RediSyncSocketStringResponse? {
@@ -424,6 +438,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketIntResponse(await emitRedis("srem", params: [key] + members))
 	}
 	
+	func stopWatching(watcherId: String) async -> RediSyncSocketDictResponse? {
+		return RediSyncSocketDictResponse(await emitToSocket("stop-watching", ["id": watcherId]))
+	}
+	
 	func strlen(key: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("strlen", key))
 	}
@@ -454,6 +472,10 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func ttl(key: String) async -> RediSyncSocketIntResponse? {
 		return RediSyncSocketIntResponse(await emitRedis("ttl", key))
+	}
+	
+	func watch(key: String) async -> RediSyncSocketWatchResponse? {
+		return RediSyncSocketWatchResponse(await emitToSocket("watch", ["key": key]))
 	}
 	
 	@discardableResult
@@ -609,7 +631,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 	}
 	
 	private func onRedisyncError(data: [Any], ack: SocketAckEmitter) {
-		
+		logger.error("REDISYNC ERROR - \(data, privacy: .public)")
 	}
 	
 	private func reconnect() {

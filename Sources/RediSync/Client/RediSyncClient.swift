@@ -65,7 +65,7 @@ open class RediSyncClient: RediSyncEventEmitter
 		
 		status = .notConnected
 		
-		emit("error", args: "RediSync Connection Error")
+		emit("error", "RediSync Connection Error")
 		
 		return false
 	}
@@ -140,6 +140,14 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.get(key: key)
 	}
 	
+	public func getAndWatch(key: String) async -> RediSyncKey<String> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.get(key: key)
+		}
+		return await key.startWatching()
+	}
+	
 	public func getdel(key: String) async -> String? {
 		await connectIfNotConnected()
 		return await sockets?.getdel(key: key)
@@ -153,6 +161,14 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func getInt(key: String) async -> Int? {
 		await connectIfNotConnected()
 		return await sockets?.getInt(key: key)
+	}
+	
+	public func getIntAndWatch(key: String) async -> RediSyncKey<Int> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.getInt(key: key)
+		}
+		return await key.startWatching()
 	}
 	
 	public func getrange(key: String, start: Int, end: Int) async -> String {
@@ -183,6 +199,19 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func hgetall(key: String) async -> [String: String] {
 		await connectIfNotConnected()
 		return await sockets?.hgetall(key: key) ?? [:]
+	}
+	
+	public func hgetallAndWatch(key: String) async -> RediSyncKey<[String: String]> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.hgetall(key: key)
+		}
+		return await key.startWatching()
+	}
+	
+	public func hgetInt(key: String, field: String) async -> Int? {
+		await connectIfNotConnected()
+		return await sockets?.hgetInt(key: key, field: field)
 	}
 	
 	@discardableResult
@@ -343,6 +372,14 @@ open class RediSyncClient: RediSyncEventEmitter
 		return await sockets?.lrange(key: key, start: start, stop: stop) ?? []
 	}
 	
+	public func lrangeAndWatch(key: String, start: Int, stop: Int) async -> RediSyncKey<[String]> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.lrange(key: key, start: start, stop: stop)
+		}
+		return await key.startWatching()
+	}
+	
 	public func lrem(key: String, count: Int, element: RediSyncValue) async -> Int {
 		await connectIfNotConnected()
 		return await sockets?.lrem(key: key, count: count, element: element) ?? 0
@@ -356,6 +393,14 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func ltrim(key: String, start: Int, stop: Int) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.ltrim(key: key, start: start, stop: stop) ?? false
+	}
+	
+	public func lwatch(key: String) async -> RediSyncKey<[String]> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.lrange(key: key, start: 0, stop: -1)
+		}
+		return await key.startWatching()
 	}
 	
 	@discardableResult
@@ -485,6 +530,14 @@ open class RediSyncClient: RediSyncEventEmitter
 	public func smembers(key: String) async -> Set<String> {
 		await connectIfNotConnected()
 		return Set(await sockets?.smembers(key: key) ?? [])
+	}
+	
+	public func smembersAndWatch(key: String) async -> RediSyncKey<Set<String>> {
+		await connectIfNotConnected()
+		let key = await RediSyncKey.forKey(key, sockets: sockets) { [weak self] in
+			return await self?.smembers(key: key)
+		}
+		return await key.startWatching()
 	}
 	
 	public func smismember(key: String, members: RediSyncValue...) async -> [Bool] {

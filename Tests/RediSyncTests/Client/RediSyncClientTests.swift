@@ -1244,4 +1244,56 @@ final class RediSyncClientTests: XCTestCase
 		let ttl = await client.ttl(key: key1)
 		XCTAssertEqual(ttl, 10)
 	}
+	
+	func testGetAndWatchGetsValueAndWatchesForChanges() async throws {
+		let expectation = XCTestExpectation(description: "getAndWatch retrieves initial value, and then updates as value is changed")
+		
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello")
+
+		let key = await client.getAndWatch(key: key1)
+		XCTAssertEqual(key.value, "Hello")
+		
+		key.on("changed") { (value: String?) in
+			XCTAssertEqual(value, "World")
+			XCTAssertEqual(key.value, "World")
+			expectation.fulfill()
+		}
+		
+		Task {
+			await client.set(key: key1, value: "World")
+		}
+		
+		await fulfillment(of: [expectation], timeout: 10.0)
+	}
+	
+	func testGetIntAndWatchGetsIntValueAndWatchesForChanges() async throws {
+		let expectation = XCTestExpectation(description: "getIntAndWatch retrieves initial value, and then updates as value is changed")
+		
+		let client = try await RediSyncTestClientFactory.create()
+
+		let key1 = UUID().uuidString
+		let value1 = Int.random(in: 0..<100000)
+		let value2 = Int.random(in: 100000...200000)
+		
+		await client.set(key: key1, value: value1)
+
+		let key = await client.getIntAndWatch(key: key1)
+		XCTAssertEqual(key.value, value1)
+		
+		key.on("changed") { (value: Int?) in
+			XCTAssertEqual(value, value2)
+			XCTAssertEqual(key.value, value2)
+			expectation.fulfill()
+		}
+		
+		Task {
+			await client.set(key: key1, value: value2)
+		}
+		
+		await fulfillment(of: [expectation], timeout: 10.0)
+	}
 }

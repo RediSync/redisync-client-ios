@@ -144,6 +144,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hgetInt(key: String, field: String) async -> Int? {
+		let result = await sendToSockets { await $0.hgetInt(key: key, field: field) }
+		return result?.value
+	}
+	
 	func hincrby(key: String, field: String, increment: Int) async -> Int? {
 		let result = await sendToSockets { await $0.hincrby(key: key, field: field, increment: increment) }
 		return result?.value
@@ -292,6 +297,26 @@ class RediSyncSocketManager: RediSyncEventEmitter
 	func ltrim(key: String, start: Int, stop: Int) async -> Bool? {
 		let result = await sendToSockets { await $0.ltrim(key: key, start: start, stop: stop) }
 		return result?.ok
+	}
+	
+	func offSocketEvent(_ ids: [UUID]) {
+		for socket in sockets {
+			for id in ids {
+				socket.offSocketEvent(id: id)
+			}
+		}
+	}
+	
+	func onSocketEvent(_ eventName: String, listener: @escaping ([String: Any]) -> Void) -> [UUID] {
+		var result: [UUID] = []
+		
+		for socket in sockets {
+			if let id = socket.onSocketEvent(eventName, listener: listener) {
+				result.append(id)
+			}
+		}
+		
+		return result
 	}
 	
 	func rpop(key: String) async -> String? {
@@ -454,6 +479,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func stopWatching(watcherId: String) async -> Bool {
+		let result = await sendToSockets { await $0.stopWatching(watcherId: watcherId) }
+		return result?.value != nil
+	}
+	
 	func strlen(key: String) async -> Int? {
 		let result = await sendToSockets { await $0.strlen(key: key) }
 		return result?.value
@@ -494,13 +524,21 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func watch(key: String) async -> String? {
+		let result = await sendToSockets { await $0.watch(key: key) }
+		return result?.id
+	}
+	
+	@discardableResult
 	private func sendToSockets<T: RediSyncSocketResponse>(_ handler: @escaping RediSyncSocketMessageHandler<T>) async -> T? {
 		return await withCheckedContinuation { continuation in
-			let continuationBlockDuplicates = RediSyncContinuationBlockingDuplicates(continuation: continuation)
-			
+			let continuationBlockDuplicates = RediSyncContinuationBlockingDuplicatesAndNils(continuation: continuation, maxNils: sockets.count)
+			let sockets = sockets
+						
 			for socket in sockets {
 				Task {
-					continuationBlockDuplicates.returnResult(await handler(socket))
+					let response = await handler(socket)
+					continuationBlockDuplicates.returnResult(response)
 				}
 			}
 		}
