@@ -39,58 +39,46 @@ public typealias RediSyncEventHandlerCallback<T> = (T?) -> ()
 @available(macOS 10.15, *)
 open class RediSyncEventEmitter: NSObject
 {
+	private let handlersLockQueue = DispatchQueue(label: "redisync.eventemitter.handlers.lock.queue")
+
 	private var handlers: [UUID: RediSyncEventHandlerWrapper] = [:]
-	private var handlerIdsByEvent: [String: [UUID]] = [:]
+	private var handlerIdsByEvent: [String: Set<UUID>] = [:]
 	
 	open func emit<T>(_ event: String, _ args: T?) {
-		let handlerIds = handlerIdsByEvent[event] ?? []
-		
-		Task {
-			for handlerId in handlerIds {
-				let handler = handlers[handlerId] as? RediSyncEventHandler<T>
-				handler?.emit(args)
+		let handlers = handlersFor(event: event)
+
+		for handler in handlers {
+			if let handler = handler as? RediSyncEventHandler<T> {
+				Task {
+					handler.emit(args)
+				}
 			}
 		}
 	}
 	
 	open func emit(_ event: String) {
-		let handlerIds = handlerIdsByEvent[event] ?? []
+		let handlers = handlersFor(event: event)
 		
-		Task {
-			for handlerId in handlerIds {
-				let handler = handlers[handlerId] as? RediSyncEventHandler<Any>
-				handler?.emit(nil)
+		for handler in handlers {
+			if let handler = handler as? RediSyncEventHandler<Any> {
+				Task {
+					handler.emit(nil)
+				}
+			}
+			else {
+				print("*** ERROR: Handler cannot be assigned as RediSyncEventHandler<Any> for event '\(event)' ***")
 			}
 		}
 	}
 	
 	@objc
 	open func off(_ event: String) {
-		let handlerIds = handlerIdsByEvent[event] ?? []
-		
-		for handlerId in handlerIds {
-			handlers[handlerId]?.isActive = false
-			handlers[handlerId] = nil
-		}
-		
-		handlerIdsByEvent[event] = nil
-	}
-	
-	@objc
-	open func off(_ event: String, id: UUID) {
-		handlers[id]?.isActive = false
-		handlerIdsByEvent[event] =  handlerIdsByEvent[event]?.filter { $0 != id }
-		handlers[id] = nil
+		removeHandlersFor(event: event)
 	}
 	
 	@objc
 	open func off(id: UUID) {
-		if var handler = handlers[id] {
-			handler.isActive = false
-			handlerIdsByEvent[handler.event] =  handlerIdsByEvent[handler.event]?.filter { $0 != id }
-		}
-		
-		handlers[id] = nil
+		removeHandler(id: id)
 	}
 
 	@objc
@@ -98,10 +86,8 @@ open class RediSyncEventEmitter: NSObject
 	open func on(_ event: String, once: Bool = false, handler: @escaping RediSyncEventHandlerCallback<Any>) -> UUID {
 		let eventHandler = RediSyncEventHandler(event, once: once, handler: handler)
 		
-		handlers[eventHandler.id] = eventHandler
-		handlerIdsByEvent[event] = handlerIdsByEvent[event] ?? []
-		handlerIdsByEvent[event]!.append(eventHandler.id)
-		
+		setHandler(handler: eventHandler)
+
 		return eventHandler.id
 	}
 	
@@ -109,10 +95,8 @@ open class RediSyncEventEmitter: NSObject
 	open func on<T>(_ event: String, once: Bool = false, handler: @escaping RediSyncEventHandlerCallback<T>) -> UUID {
 		let eventHandler = RediSyncEventHandler(event, once: once, handler: handler)
 		
-		handlers[eventHandler.id] = eventHandler
-		handlerIdsByEvent[event] = handlerIdsByEvent[event] ?? []
-		handlerIdsByEvent[event]!.append(eventHandler.id)
-
+		setHandler(handler: eventHandler)
+		
 		return eventHandler.id
 	}
 
@@ -153,9 +137,64 @@ open class RediSyncEventEmitter: NSObject
 			}
 		}
 	}
+	
+	private func handler(id: UUID) -> RediSyncEventHandlerWrapper? {
+		return handlersLockQueue.sync { handlers[id] }
+	}
+	
+	private func handlersFor(event: String) -> [RediSyncEventHandlerWrapper] {
+		return handlersLockQueue.sync {
+			guard let handlerIds = handlerIdsByEvent[event] else { return [] }
+			
+			var handlers: [RediSyncEventHandlerWrapper] = []
+			
+			for handlerId in handlerIds {
+				if let handler = self.handlers[handlerId] {
+					handlers.append(handler)
+				}
+			}
+			
+			return handlers
+		}
+	}
+	
+	private func removeHandler(id: UUID) {
+		handlersLockQueue.sync {
+			guard var handler = handlers[id] else { return }
+			
+			handler.isActive = false
+			handlerIdsByEvent[handler.event]?.remove(id)
+			handlers[id] = nil
+		}
+	}
+	
+	private func removeHandlersFor(event: String) {
+		handlersLockQueue.sync {
+			guard var handlerIds = handlerIdsByEvent[event] else { return }
+			
+			for handlerId in handlerIds {
+				if var handler = self.handlers[handlerId] {
+					handler.isActive = false
+					self.handlers[handlerId] = nil
+				}
+			}
+			
+			handlerIds.removeAll()
+		}
+	}
+	
+	private func setHandler(handler: RediSyncEventHandlerWrapper) {
+		handlersLockQueue.sync {
+			self.handlers[handler.id] = handler
+			
+			self.handlerIdsByEvent[handler.event] = self.handlerIdsByEvent[handler.event] ?? Set()
+			self.handlerIdsByEvent[handler.event]!.insert(handler.id)
+		}
+	}
 }
 
 fileprivate protocol RediSyncEventHandlerWrapper {
 	var event: String { get }
+	var id: UUID { get }
 	var isActive: Bool { get set }
 }

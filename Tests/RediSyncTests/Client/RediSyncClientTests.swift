@@ -1296,4 +1296,20 @@ final class RediSyncClientTests: XCTestCase
 		
 		await fulfillment(of: [expectation], timeout: 10.0)
 	}
+	
+	func testMGetReturnsTheValueOfAllSpecifiedKeys() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		
+		await client.set(key: key1, value: "Hello")
+		await client.set(key: key2, value: "World")
+		
+		let mget = await client.mget(keys: key1, key2, "nonexisting")
+		XCTAssertEqual(mget.count, 3)
+		XCTAssertEqual(mget[0], "Hello")
+		XCTAssertEqual(mget[1], "World")
+		XCTAssertNil(mget[2])
+	}
 }

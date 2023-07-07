@@ -38,6 +38,7 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	internal let url: URL
 	
+	private let emitToSocketLockQueue = DispatchQueue(label: "redisync.socket.emittosocket.lockqueue")
 	private let logger = Logger(subsystem: "RediSync", category: "RediSyncSocket")
 	private let rs: String?
 	
@@ -207,13 +208,18 @@ final class RediSyncSocket: RediSyncEventEmitter
 	}
 	
 	func hset(key: String, fieldValues: (String, RediSyncValue)...) async -> RediSyncSocketIntResponse? {
-		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
-		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
+		let params = [key] + fieldValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketIntResponse(await emitRedis("hset", params: params))
 	}
 
-	func hset(key: String, fieldValues: [(String, Any)]) async -> RediSyncSocketIntResponse? {
-		let hsetParams = [key] + fieldValues.flatMap { [$0.0, $0.1] }
-		return RediSyncSocketIntResponse(await emitRedis("hset", params: hsetParams))
+	func hset(key: String, fieldValues: [(String, RediSyncValue)]) async -> RediSyncSocketIntResponse? {
+		let params = [key] + fieldValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketIntResponse(await emitRedis("hset", params: params))
+	}
+	
+	func hset(key: String, fieldValues: [String: RediSyncValue]) async -> RediSyncSocketIntResponse? {
+		let params = [key] + fieldValues.flatMap { [$0.key, $0.value] }
+		return RediSyncSocketIntResponse(await emitRedis("hset", params: params))
 	}
 	
 	func hsetnx(key: String, field: String, value: RediSyncValue) async -> RediSyncSocketIntResponse? {
@@ -298,6 +304,29 @@ final class RediSyncSocket: RediSyncEventEmitter
 	
 	func ltrim(key: String, start: Int, stop: Int) async -> RediSyncSocketOKResponse? {
 		return RediSyncSocketOKResponse(await emitRedis("ltrim", key, start, stop))
+	}
+	
+	func mget(keys: String...) async -> RediSyncSocketArrayResponse<String?>? {
+		return RediSyncSocketArrayResponse(await emitRedis("mget", params: keys))
+	}
+	
+	func mget(keys: [String]) async -> RediSyncSocketArrayResponse<String?>? {
+		return RediSyncSocketArrayResponse(await emitRedis("mget", params: keys))
+	}
+	
+	func mset(keyValues: (String, RediSyncValue)...) async -> RediSyncSocketOKResponse? {
+		let params = keyValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketOKResponse(await emitRedis("mset", params: params))
+	}
+
+	func mset(keyValues: [(String, RediSyncValue)]) async -> RediSyncSocketOKResponse? {
+		let params = keyValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketOKResponse(await emitRedis("mset", params: params))
+	}
+
+	func mset(keyValues: [String: RediSyncValue]) async -> RediSyncSocketOKResponse? {
+		let params = keyValues.flatMap { [$0.key, $0.value] as [Any] }
+		return RediSyncSocketOKResponse(await emitRedis("mset", params: params))
 	}
 	
 	func offSocketEvent(id: UUID) {
@@ -559,10 +588,12 @@ final class RediSyncSocket: RediSyncEventEmitter
 		logger.debug("emitToSocket(\(event, privacy: .public): \(params, privacy: .public)")
 		
 		return await withCheckedContinuation { continuation in
-			socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
-				self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
-				
-				continuation.resume(returning: data)
+			emitToSocketLockQueue.async {
+				self.socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
+					self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
+					
+					continuation.resume(returning: data)
+				}
 			}
 		}
 	}
@@ -571,10 +602,12 @@ final class RediSyncSocket: RediSyncEventEmitter
 		logger.debug("emitToSocket(\(event, privacy: .public): \(params, privacy: .public)")
 		
 		return await withCheckedContinuation { continuation in
-			socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
-				self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
-				
-				continuation.resume(returning: data)
+			emitToSocketLockQueue.async {
+				self.socket?.emitWithAck(event, with: params as! [any SocketData]).timingOut(after: 10) { [weak self] data in
+					self?.logger.debug("emitToSocket(\(event, privacy: .public) ack: \(data, privacy: .public)")
+					
+					continuation.resume(returning: data)
+				}
 			}
 		}
 	}

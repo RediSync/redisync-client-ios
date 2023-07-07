@@ -194,6 +194,11 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.value
 	}
 	
+	func hset(key: String, fieldValues: [String: RediSyncValue]) async -> Int? {
+		let result = await sendToSockets { await $0.hset(key: key, fieldValues: fieldValues) }
+		return result?.value
+	}
+	
 	func hsetnx(key: String, field: String, value: RediSyncValue) async -> Int? {
 		let result = await sendToSockets { await $0.hsetnx(key: key, field: field, value: value) }
 		return result?.value
@@ -296,6 +301,31 @@ class RediSyncSocketManager: RediSyncEventEmitter
 	
 	func ltrim(key: String, start: Int, stop: Int) async -> Bool? {
 		let result = await sendToSockets { await $0.ltrim(key: key, start: start, stop: stop) }
+		return result?.ok
+	}
+	
+	func mget(keys: String...) async -> [String?]? {
+		let result = await sendToSockets { await $0.mget(keys: keys) }
+		return result?.value
+	}
+	
+	func mget(keys: [String]) async -> [String?]? {
+		let result = await sendToSockets { await $0.mget(keys: keys) }
+		return result?.value
+	}
+	
+	func mset(keyValues: (String, RediSyncValue)...) async -> Bool? {
+		let result = await sendToSockets { await $0.mset(keyValues: keyValues) }
+		return result?.ok
+	}
+	
+	func mset(keyValues: [(String, RediSyncValue)]) async -> Bool? {
+		let result = await sendToSockets { await $0.mset(keyValues: keyValues) }
+		return result?.ok
+	}
+	
+	func mset(keyValues: [String: RediSyncValue]) async -> Bool? {
+		let result = await sendToSockets { await $0.mset(keyValues: keyValues) }
 		return result?.ok
 	}
 	

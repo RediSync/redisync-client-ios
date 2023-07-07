@@ -265,11 +265,17 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func hset(key: String, fieldValues: [String: RediSyncValue]) async -> Int {
+		await connectIfNotConnected()
+		return await sockets?.hset(key: key, fieldValues: fieldValues) ?? 0
+	}
+
+	@discardableResult
 	public func hset(key: String, field: String, value: RediSyncValue) async -> Bool {
 		await connectIfNotConnected()
 		return await sockets?.hset(key: key, fieldValues: (field, value)) == 1
 	}
-	
+		
 	@discardableResult
 	public func hsetnx(key: String, field: String, value: RediSyncValue) async -> Bool {
 		await connectIfNotConnected()
@@ -401,6 +407,34 @@ open class RediSyncClient: RediSyncEventEmitter
 			return await self?.lrange(key: key, start: 0, stop: -1)
 		}
 		return await key.startWatching()
+	}
+	
+	public func mget(keys: String...) async -> [String?] {
+		await connectIfNotConnected()
+		return await sockets?.mget(keys: keys) ?? []
+	}
+	
+	public func mget(keys: [String]) async -> [String?] {
+		await connectIfNotConnected()
+		return await sockets?.mget(keys: keys) ?? []
+	}
+	
+	@discardableResult
+	public func mset(keyValues: (String, RediSyncValue)...) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.mset(keyValues: keyValues) ?? false
+	}
+	
+	@discardableResult
+	public func mset(keyValues: [(String, RediSyncValue)]) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.mset(keyValues: keyValues) ?? false
+	}
+	
+	@discardableResult
+	public func mset(keyValues: [String: RediSyncValue]) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.mset(keyValues: keyValues) ?? false
 	}
 	
 	@discardableResult

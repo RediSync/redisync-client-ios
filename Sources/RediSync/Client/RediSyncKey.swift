@@ -41,7 +41,7 @@ public class RediSyncKey<T>: RediSyncEventEmitter
 	}
 	
 	deinit {
-		Task { await stopWatching() }
+//		Task { await stopWatching() }
 	}
 	
 	@discardableResult
