@@ -329,6 +329,21 @@ final class RediSyncSocket: RediSyncEventEmitter
 		return RediSyncSocketOKResponse(await emitRedis("mset", params: params))
 	}
 	
+	func msetnx(keyValues: (String, RediSyncValue)...) async -> RediSyncSocketBoolResponse? {
+		let params = keyValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketBoolResponse(await emitRedis("msetnx", params: params))
+	}
+	
+	func msetnx(keyValues: [(String, RediSyncValue)]) async -> RediSyncSocketBoolResponse? {
+		let params = keyValues.flatMap { [$0.0, $0.1] }
+		return RediSyncSocketBoolResponse(await emitRedis("msetnx", params: params))
+	}
+	
+	func msetnx(keyValues: [String: RediSyncValue]) async -> RediSyncSocketBoolResponse? {
+		let params = keyValues.flatMap { [$0.key, $0.value] }
+		return RediSyncSocketBoolResponse(await emitRedis("msetnx", params: params))
+	}
+	
 	func offSocketEvent(id: UUID) {
 		socket?.off(id: id)
 	}

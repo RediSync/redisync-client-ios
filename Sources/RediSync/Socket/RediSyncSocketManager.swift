@@ -329,6 +329,21 @@ class RediSyncSocketManager: RediSyncEventEmitter
 		return result?.ok
 	}
 	
+	func msetnx(keyValues: (String, RediSyncValue)...) async -> Bool? {
+		let result = await sendToSockets { await $0.msetnx(keyValues: keyValues) }
+		return result?.value
+	}
+	
+	func msetnx(keyValues: [(String, RediSyncValue)]) async -> Bool? {
+		let result = await sendToSockets { await $0.msetnx(keyValues: keyValues) }
+		return result?.value
+	}
+	
+	func msetnx(keyValues: [String: RediSyncValue]) async -> Bool? {
+		let result = await sendToSockets { await $0.msetnx(keyValues: keyValues) }
+		return result?.value
+	}
+	
 	func offSocketEvent(_ ids: [UUID]) {
 		for socket in sockets {
 			for id in ids {

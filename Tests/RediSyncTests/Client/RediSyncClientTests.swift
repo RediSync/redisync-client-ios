@@ -1312,4 +1312,39 @@ final class RediSyncClientTests: XCTestCase
 		XCTAssertEqual(mget[1], "World")
 		XCTAssertNil(mget[2])
 	}
+	
+	func testMSetSetsTheGivenKeysToTheirRespectiveValues() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+
+		let mset = await client.mset(keyValues: [key1: "Hello", key2: "World"])
+		XCTAssertTrue(mset)
+		
+		let key1Value = await client.get(key: key1)
+		XCTAssertEqual(key1Value, "Hello")
+
+		let key2Value = await client.get(key: key2)
+		XCTAssertEqual(key2Value, "World")
+	}
+	
+	func testMsetNXSetsTheGivenKeysOnlyIfAllKeysDontExist() async throws {
+		let client = try await RediSyncTestClientFactory.create()
+		
+		let key1 = UUID().uuidString
+		let key2 = UUID().uuidString
+		let key3 = UUID().uuidString
+		
+		let msetnx1 = await client.msetnx(keyValues: [key1: "Hello", key2: "there"])
+		XCTAssertTrue(msetnx1)
+		
+		let msetnx2 = await client.msetnx(keyValues: [key2: "new", key3: "world"])
+		XCTAssertFalse(msetnx2)
+		
+		let keyValues = await client.mget(keys: key1, key2, key3)
+		XCTAssertEqual(keyValues[0], "Hello")
+		XCTAssertEqual(keyValues[1], "there")
+		XCTAssertNil(keyValues[2])
+	}
 }

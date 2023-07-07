@@ -438,6 +438,24 @@ open class RediSyncClient: RediSyncEventEmitter
 	}
 	
 	@discardableResult
+	public func msetnx(keyValues: (String, RediSyncValue)...) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.msetnx(keyValues: keyValues) ?? false
+	}
+	
+	@discardableResult
+	public func msetnx(keyValues: [(String, RediSyncValue)]) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.msetnx(keyValues: keyValues) ?? false
+	}
+	
+	@discardableResult
+	public func msetnx(keyValues: [String: RediSyncValue]) async -> Bool {
+		await connectIfNotConnected()
+		return await sockets?.msetnx(keyValues: keyValues) ?? false
+	}
+	
+	@discardableResult
 	public func rpop(key: String) async -> String? {
 		await connectIfNotConnected()
 		return await sockets?.rpop(key: key)
